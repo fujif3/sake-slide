@@ -65,14 +65,6 @@
     margin-right: 20px;
   }
 
-  /* 上2行: 左右分割トラック */
-  .track-divided {
-    background: linear-gradient(to right,
-      #bbb 0%, #bbb 50%,
-      transparent 50%, transparent 54%,
-      #bbb 54%, #bbb 100%
-    ) !important;
-  }
   /* 上2行: 全幅 */
   .slider-area {
     flex: 1;
@@ -172,17 +164,6 @@
   }
   .pink-dot:hover  { box-shadow: 0 0 0 6px rgba(232,51,106,0.18); }
   .pink-dot:active { cursor: grabbing; box-shadow: 0 0 0 8px rgba(232,51,106,0.25); }
-
-  .avg-marker {
-    position: absolute;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    display: flex;
-    gap: 10px;
-    pointer-events: none;
-    z-index: 5;
-  }
-  .avg-bar { width: 3px; height: 18px; background: #444; border-radius: 1px; }
 </style>
 </head>
 <body>
@@ -202,9 +183,8 @@
         <span class="tick-label" style="left:100%">辛口</span>
       </div>
       <div class="track-wrapper">
-        <div class="track track-divided" id="track-0">
+        <div class="track" id="track-0">
           <div class="tick-dots" id="dots-0"></div>
-          <div class="avg-marker" style="left:52%"><div class="avg-bar"></div><div class="avg-bar"></div></div>
           <div class="pink-dot" id="dot-0"></div>
         </div>
       </div>
@@ -223,9 +203,8 @@
         <span class="tick-label" style="left:100%">淡麗</span>
       </div>
       <div class="track-wrapper">
-        <div class="track track-divided" id="track-1">
+        <div class="track" id="track-1">
           <div class="tick-dots" id="dots-1"></div>
-          <div class="avg-marker" style="left:52%"><div class="avg-bar"></div><div class="avg-bar"></div></div>
           <div class="pink-dot" id="dot-1"></div>
         </div>
       </div>
@@ -237,7 +216,7 @@
     <div class="label">香り</div>
     <div class="slider-area-half">
       <div class="tick-labels ticks-3">
-        <span class="tick-label" style="left:0%">やや強い</span>
+        <span class="tick-label" style="left:0%">強い</span>
         <span class="tick-label" style="left:50%">やや有る</span>
         <span class="tick-label" style="left:100%">ごく普通</span>
       </div>
@@ -255,7 +234,7 @@
     <div class="label">酸</div>
     <div class="slider-area-half">
       <div class="tick-labels ticks-3">
-        <span class="tick-label" style="left:0%">やや強い</span>
+        <span class="tick-label" style="left:0%">強い</span>
         <span class="tick-label" style="left:50%">やや有る</span>
         <span class="tick-label" style="left:100%">ほぼ無し</span>
       </div>
@@ -273,7 +252,7 @@
     <div class="label">苦味</div>
     <div class="slider-area-half">
       <div class="tick-labels ticks-3">
-        <span class="tick-label" style="left:0%">やや強い</span>
+        <span class="tick-label" style="left:0%">強い</span>
         <span class="tick-label" style="left:50%">やや有る</span>
         <span class="tick-label" style="left:100%">ほぼ無し</span>
       </div>
@@ -291,7 +270,7 @@
     <div class="label" onclick="resetAll()" style="cursor:pointer" title="リセット">発泡</div>
     <div class="slider-area-half">
       <div class="tick-labels ticks-3">
-        <span class="tick-label" style="left:0%">やや強い</span>
+        <span class="tick-label" style="left:0%">強い</span>
         <span class="tick-label" style="left:50%">やや有る</span>
         <span class="tick-label" style="left:100%">ほぼ無し</span>
       </div>
@@ -311,13 +290,14 @@
   // 各スライダーの目盛り数
   const tickCounts = [5, 5, 3, 3, 3, 3];
 
-  function renderTickDots(dotsEl, ticks, hiddenIndex) {
+  function renderTickDots(dotsEl, ticks, centerBig) {
     dotsEl.innerHTML = '';
     for (let i = 0; i < ticks; i++) {
       const d = document.createElement('div');
       d.className = 'tick-dot';
-      if (hiddenIndex !== undefined && i === hiddenIndex) {
-        d.style.visibility = 'hidden';
+      if (centerBig && i === Math.floor(ticks / 2)) {
+        d.style.width = '10px';
+        d.style.height = '10px';
       }
       dotsEl.appendChild(d);
     }
@@ -334,9 +314,7 @@
     const ticks   = tickCounts[index];
     let   curPct  = defaultPcts[index];
 
-    // 上2行は中央の点を非表示
-    const hiddenIdx = (index <= 1) ? 2 : undefined;
-    renderTickDots(dotsEl, ticks, hiddenIdx);
+    renderTickDots(dotsEl, ticks, index <= 1);
     setPct(dotEl, curPct);
 
     let dragging = false;
