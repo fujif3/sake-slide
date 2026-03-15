@@ -299,7 +299,7 @@
 
 <script>
   // 初期位置（%）: 甘辛=中口50%, 濃淡=普通50%, 香り=やや有る50%, 酸味=やや有る50%, 苦味=やや有る50%, 発泡性=ほぼ無し100%
-  const defaultPcts = [50, 50, 50, 50, 50, 100];
+  const defaultPcts = [50, 50, 100, 100, 100, 100];
   // 各スライダーの目盛り数
   const tickCounts = [5, 5, 3, 3, 3, 3];
 
@@ -377,12 +377,15 @@
   }
 
   // 上2行=50%, 下4行=100%
+  const resetPcts = [50, 50, 100, 100, 100, 100];
+
   function resetAll() {
-    const pcts = [50, 50, 100, 100, 100, 100];
     for (let i = 0; i < 6; i++) {
       const dotEl = document.getElementById('dot-' + i);
-      dotEl.style.left = pcts[i] + '%';
+      dotEl.style.left = resetPcts[i] + '%';
     }
+    document.getElementById('impression').value = '';
+    document.querySelector('.title-input').value = '純米吟醸　無濾過';
   }
 
   // レイアウト確定後に初期化（iPhone対応）
