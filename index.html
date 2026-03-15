@@ -158,6 +158,10 @@
     -webkit-tap-highlight-color: transparent;
     user-select: none;
     -webkit-user-select: none;
+    transition: box-shadow 0.12s;
+  }
+  .pink-dot.active {
+    box-shadow: 0 0 0 8px rgba(232,51,106,0.25);
   }
 </style>
 </head>
@@ -347,6 +351,7 @@
 
     function onStart(clientX) {
       dragging = true;
+      dotEl.classList.add('active');
       curPct = pctFrom(clientX);
       setDotPct(dotEl, curPct);
     }
@@ -357,6 +362,7 @@
     }
     function onEnd() {
       dragging = false;
+      dotEl.classList.remove('active');
     }
 
     // --- タッチイベント（iOS優先） ---
