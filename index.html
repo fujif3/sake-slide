@@ -105,7 +105,8 @@
   /* トラック本体：タッチ領域を十分確保するため高さを持たせる */
   .track {
     position: relative;
-    width: 100%;
+    width: calc(100% + 14px);
+    margin-left: -7px;
     height: 44px;
     display: flex;
     align-items: center;
@@ -116,11 +117,11 @@
     -webkit-user-select: none;
   }
 
-  /* 見た目のライン */
+  /* 見た目のライン：トラック内で左右7pxオフセットして元の幅に */
   .track-line {
     position: absolute;
-    left: 0;
-    right: 0;
+    left: 7px;
+    right: 7px;
     height: 2px;
     background: #bbb;
     border-radius: 2px;
@@ -129,8 +130,8 @@
 
   .tick-dots {
     position: absolute;
-    left: 0;
-    width: 100%;
+    left: 7px;
+    right: 7px;
     display: flex;
     justify-content: space-between;
     pointer-events: none;
@@ -327,9 +328,13 @@
     }
   }
 
-  // pct(0〜100)を赤丸にセット
+  // pct(0〜100)を赤丸にセット（トラックが左右7px広いので補正）
   function setDotPct(dotEl, pct) {
-    dotEl.style.left = Math.max(0, Math.min(100, pct)) + '%';
+    var track = dotEl.parentElement;
+    var trackWidth = track.offsetWidth;
+    var innerWidth = trackWidth - 14;
+    var px = 7 + (innerWidth * Math.max(0, Math.min(100, pct)) / 100);
+    dotEl.style.left = px + 'px';
   }
 
   // 各trackを初期化
@@ -346,7 +351,8 @@
 
     function pctFrom(clientX) {
       var rect = track.getBoundingClientRect();
-      return Math.max(0, Math.min(100, (clientX - rect.left) / rect.width * 100));
+      // トラックは左右7px広がっているので、内側の有効幅で計算
+      return Math.max(0, Math.min(100, (clientX - rect.left - 7) / (rect.width - 14) * 100));
     }
 
     function onStart(clientX) {
