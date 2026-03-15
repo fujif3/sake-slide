@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>田酒　特別純米</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #fff;
+    font-family: "Meiryo", "メイリオ", "Hiragino Kaku Gothic ProN", sans-serif;
+    font-weight: 700;
+    display: flex;
+    justify-content: center;
+    padding: 40px 20px;
+    min-height: 100vh;
+  }
+
+  .container { width: 476px; }
+
+  .title-input {
+    display: block;
+    text-align: center;
+    font-size: 20px;
+    font-weight: 900;
+    letter-spacing: 0.1em;
+    margin-bottom: 0;
+    color: #111;
+    border: none;
+    outline: none;
+    background: transparent;
+    width: 100%;
+    font-family: inherit;
+    padding: 0;
+    line-height: 1;
+  }
+
+  .divider {
+    border: none;
+    border-top: 1.5px solid #999;
+    margin: 1px auto 32px;
+    width: 70%;
+  }
+
+  .row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+
+  .label {
+    background: #7a7a2a;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    width: 72px;
+    min-width: 72px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    margin-right: 20px;
+  }
+
+  /* 上2行: 全幅 */
+  .slider-area {
+    flex: 1;
+    position: relative;
+    padding-top: 16px;
+  }
+
+  /* 下4行: 上の半分幅（5目盛り4間隔の半分=2間隔分=3目盛り分と同じ間隔） 
+     コンテナ680px - label92px = 588px。半分 = 294px */
+  .slider-area-half {
+    flex-shrink: 0;
+    position: relative;
+    padding-top: 16px;
+  }
+
+  /* ラベル行: absoluteで各目盛り位置に正確配置 */
+  .tick-labels {
+    position: relative;
+    height: 18px;
+    margin-bottom: 6px;
+  }
+
+  .tick-label {
+    position: absolute;
+    font-size: 12px;
+    font-family: "Meiryo", "メイリオ", "Hiragino Kaku Gothic ProN", sans-serif;
+    font-weight: 700;
+    color: #333;
+    white-space: nowrap;
+    transform: translateX(-50%);
+  }
+  /* 両端は端寄せ（はみ出し防止） */
+  .tick-label:first-child { transform: translateX(0); }
+  .tick-label:last-child  { transform: translateX(-100%); }
+
+  .track-wrapper {
+    position: relative;
+    height: 28px;
+    display: flex;
+    align-items: center;
+  }
+
+  .track {
+    position: relative;
+    width: 100%;
+    height: 2px;
+    background: #bbb;
+    border-radius: 2px;
+    cursor: pointer;
+    touch-action: none;
+  }
+  .track-split-left {
+    position: absolute;
+    top: 0; left: 0;
+    height: 2px;
+    background: #bbb;
+    pointer-events: none;
+  }
+  .track-split-right {
+    position: absolute;
+    top: 0; right: 0;
+    height: 2px;
+    background: #bbb;
+    pointer-events: none;
+  }
+
+  .tick-dots {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    transform: translateY(-50%);
+    display: flex;
+    justify-content: space-between;
+    pointer-events: none;
+  }
+
+  .tick-dot {
+    width: 8px;
+    height: 8px;
+    background: #2a2a4a;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .pink-dot {
+    position: absolute;
+    top: 50%;
+    width: 36px;
+    height: 36px;
+    background: #e8336a;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    cursor: grab;
+    z-index: 10;
+    transition: box-shadow 0.15s;
+    user-select: none;
+    touch-action: none;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+  }
+  .pink-dot:hover  { box-shadow: 0 0 0 6px rgba(232,51,106,0.18); }
+  .pink-dot:active { cursor: grabbing; box-shadow: 0 0 0 8px rgba(232,51,106,0.25); }
+</style>
+</head>
+<body>
+<div class="container">
+  <input class="title-input" type="text" value="純米吟醸　無濾過">
+  <hr class="divider">
+
+  <!-- 甘辛: 5目盛り 全幅 -->
+  <div class="row">
+    <div class="label">甘辛</div>
+    <div class="slider-area">
+      <div class="tick-labels ticks-5">
+        <span class="tick-label" style="left:0%">甘口</span>
+        <span class="tick-label" style="left:25%">やや甘口</span>
+        <span class="tick-label" style="left:50%">中口</span>
+        <span class="tick-label" style="left:75%">やや辛口</span>
+        <span class="tick-label" style="left:100%">辛口</span>
+      </div>
+      <div class="track-wrapper">
+        <div class="track" id="track-0">
+          <div class="tick-dots" id="dots-0"></div>
+          <div class="pink-dot" id="dot-0"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 濃淡: 5目盛り 全幅 -->
+  <div class="row">
+    <div class="label">濃淡</div>
+    <div class="slider-area">
+      <div class="tick-labels ticks-5">
+        <span class="tick-label" style="left:0%">濃醇</span>
+        <span class="tick-label" style="left:25%">やや濃醇</span>
+        <span class="tick-label" style="left:50%">普通</span>
+        <span class="tick-label" style="left:75%">やや淡麗</span>
+        <span class="tick-label" style="left:100%">淡麗</span>
+      </div>
+      <div class="track-wrapper">
+        <div class="track" id="track-1">
+          <div class="tick-dots" id="dots-1"></div>
+          <div class="pink-dot" id="dot-1"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 香り: 3目盛り 半幅 -->
+  <div class="row">
+    <div class="label">香り</div>
+    <div class="slider-area-half">
+      <div class="tick-labels ticks-3">
+        <span class="tick-label" style="left:0%">強い</span>
+        <span class="tick-label" style="left:50%">やや有る</span>
+        <span class="tick-label" style="left:100%">普通</span>
+      </div>
+      <div class="track-wrapper">
+        <div class="track" id="track-2">
+          <div class="tick-dots" id="dots-2"></div>
+          <div class="pink-dot" id="dot-2"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 酸味: 3目盛り 半幅 -->
+  <div class="row">
+    <div class="label">酸</div>
+    <div class="slider-area-half">
+      <div class="tick-labels ticks-3">
+        <span class="tick-label" style="left:0%">強い</span>
+        <span class="tick-label" style="left:50%">やや有る</span>
+        <span class="tick-label" style="left:100%">無し</span>
+      </div>
+      <div class="track-wrapper">
+        <div class="track" id="track-3">
+          <div class="tick-dots" id="dots-3"></div>
+          <div class="pink-dot" id="dot-3"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 苦味: 3目盛り 半幅 -->
+  <div class="row">
+    <div class="label">苦味</div>
+    <div class="slider-area-half">
+      <div class="tick-labels ticks-3">
+        <span class="tick-label" style="left:0%">強い</span>
+        <span class="tick-label" style="left:50%">やや有る</span>
+        <span class="tick-label" style="left:100%">無し</span>
+      </div>
+      <div class="track-wrapper">
+        <div class="track" id="track-4">
+          <div class="tick-dots" id="dots-4"></div>
+          <div class="pink-dot" id="dot-4"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 発泡性: 3目盛り 半幅 -->
+  <div class="row">
+    <div class="label" onclick="resetAll()" style="cursor:pointer" title="リセット">発泡</div>
+    <div class="slider-area-half">
+      <div class="tick-labels ticks-3">
+        <span class="tick-label" style="left:0%">強い</span>
+        <span class="tick-label" style="left:50%">やや有る</span>
+        <span class="tick-label" style="left:100%">無し</span>
+      </div>
+      <div class="track-wrapper">
+        <div class="track" id="track-5">
+          <div class="tick-dots" id="dots-5"></div>
+          <div class="pink-dot" id="dot-5"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- 第一印象 -->
+  <div style="margin-top: 24px; padding-top: 8px;">
+    <div style="display:flex; align-items:baseline; gap:8px;">
+      <span style="font-size:14px; font-weight:700; white-space:nowrap;">第一印象：</span>
+      <input type="text" id="impression"
+        style="flex:1; border:none; border-bottom:1.5px solid #999; outline:none;
+               font-size:14px; font-weight:700; font-family:'Meiryo','メイリオ',sans-serif;
+               background:transparent; padding:2px 0; width:100%;"
+        placeholder="">
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // 初期位置（%）: 甘辛=中口50%, 濃淡=普通50%, 香り=やや有る50%, 酸味=やや有る50%, 苦味=やや有る50%, 発泡性=ほぼ無し100%
+  const defaultPcts = [50, 50, 100, 100, 100, 100];
+  // 各スライダーの目盛り数
+  const tickCounts = [5, 5, 3, 3, 3, 3];
+
+  function renderTickDots(dotsEl, ticks, centerBig) {
+    dotsEl.innerHTML = '';
+    for (let i = 0; i < ticks; i++) {
+      const d = document.createElement('div');
+      d.className = 'tick-dot';
+      if (centerBig && i === Math.floor(ticks / 2)) {
+        d.style.width = '10px';
+        d.style.height = '10px';
+      }
+      dotsEl.appendChild(d);
+    }
+  }
+
+  function setPct(dotEl, pct) {
+    dotEl.style.left = Math.max(0, Math.min(100, pct)) + '%';
+  }
+
+  function initSlider(index) {
+    const dotEl   = document.getElementById('dot-'   + index);
+    const dotsEl  = document.getElementById('dots-'  + index);
+    const trackEl = document.getElementById('track-' + index);
+    const ticks   = tickCounts[index];
+    let   curPct  = defaultPcts[index];
+
+    renderTickDots(dotsEl, ticks, index <= 1);
+    setPct(dotEl, curPct);
+
+    let dragging = false;
+
+    function pctFromX(clientX) {
+      const rect = trackEl.getBoundingClientRect();
+      return Math.max(0, Math.min(100, (clientX - rect.left) / rect.width * 100));
+    }
+
+    dotEl.addEventListener('mousedown', (e) => {
+      dragging = true;
+      e.preventDefault();
+    });
+
+    dotEl.addEventListener('touchstart', (e) => {
+      dragging = true;
+      e.preventDefault();
+    }, { passive: false });
+
+    document.addEventListener('mousemove', (e) => {
+      if (!dragging) return;
+      curPct = pctFromX(e.clientX);
+      setPct(dotEl, curPct);
+    });
+
+    document.addEventListener('touchmove', (e) => {
+      if (!dragging) return;
+      curPct = pctFromX(e.touches[0].clientX);
+      setPct(dotEl, curPct);
+    }, { passive: false });
+
+    document.addEventListener('mouseup',  () => { dragging = false; });
+    document.addEventListener('touchend', () => { dragging = false; });
+
+    trackEl.addEventListener('mousedown', (e) => {
+      if (e.target === dotEl) return;
+      curPct = pctFromX(e.clientX);
+      setPct(dotEl, curPct);
+      dragging = true;
+      e.preventDefault();
+    });
+
+    trackEl.addEventListener('touchstart', (e) => {
+      curPct = pctFromX(e.touches[0].clientX);
+      setPct(dotEl, curPct);
+      dragging = true;
+      e.preventDefault();
+    }, { passive: false });
+
+    dotEl._reset = () => {
+      curPct = defaultPcts[index];
+      setPct(dotEl, curPct);
+    };
+  }
+
+  // 上2行=50%, 下4行=100%
+  const resetPcts = [50, 50, 100, 100, 100, 100];
+
+  function resetAll() {
+    for (let i = 0; i < 6; i++) {
+      const dotEl = document.getElementById('dot-' + i);
+      dotEl.style.left = resetPcts[i] + '%';
+    }
+    document.getElementById('impression').value = '';
+    document.querySelector('.title-input').value = '純米吟醸　無濾過';
+  }
+
+  // レイアウト確定後に初期化（iPhone対応）
+  window.addEventListener("load", function() {
+    setTimeout(function() {
+      // 上行のtrack幅を取得して下行のslider-areaをその半分に設定
+      var fullArea = document.querySelector('.slider-area');
+      var halfWidth = fullArea.offsetWidth / 2;
+      var halves = document.querySelectorAll('.slider-area-half');
+      halves.forEach(function(el) { el.style.width = halfWidth + 'px'; });
+      // 幅確定後にスライダー初期化
+      requestAnimationFrame(function() {
+        for (let i = 0; i < 6; i++) {
+          initSlider(i);
+        }
+      });
+    });
+  });
+</script>
+</body>
+</html>
