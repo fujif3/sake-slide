@@ -14,14 +14,25 @@
     display: flex;
     justify-content: center;
     padding: 10px;
-    min-height: 100vh;
+    min-height: unset;
   }
 
   .container {
-    width: 476px;
+    width: 560px;
+    aspect-ratio: 16 / 9;
     border: 1.5px solid #7a7a2a;
     border-radius: 6px;
-    padding: 24px 20px 20px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .inner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.62);
+    transform-origin: center center;
+    width: 476px;
   }
 
   .title-input {
@@ -173,6 +184,7 @@
 </head>
 <body>
 <div class="container">
+  <div class="inner">
   <input class="title-input" type="text" value="純米吟醸　無濾過">
   <hr class="divider">
 
@@ -304,6 +316,7 @@
                background:transparent; padding:2px 0; width:100%;"
         placeholder="">
     </div>
+  </div>
   </div>
 </div>
 
