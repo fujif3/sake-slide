@@ -51,18 +51,18 @@
   .row {
     display: flex;
     align-items: center;
-    margin-bottom: 7px;
+    margin-bottom: 5px;
   }
 
   .label {
     background: #7a7a2a;
     color: #fff;
-    font-size: 16px;
+    font-size: 11px;
     font-weight: 700;
     letter-spacing: 0.1em;
-    width: 72px;
-    min-width: 72px;
-    height: 52px;
+    width: 48px;
+    min-width: 48px;
+    height: 28px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -73,19 +73,19 @@
   .slider-area {
     flex: 1;
     position: relative;
-    padding-top: 8px;
+    padding-top: 0px;
   }
 
   .slider-area-half {
     flex-shrink: 0;
     position: relative;
-    padding-top: 8px;
+    padding-top: 0px;
   }
 
   .tick-labels {
     position: relative;
-    height: 18px;
-    margin-bottom: 6px;
+    height: 14px;
+    margin-bottom: 0px;
   }
 
   .tick-label {
@@ -107,7 +107,6 @@
     align-items: center;
   }
 
-  /* トラック本体：タッチ領域を十分確保するため高さを持たせる */
   .track {
     position: relative;
     width: calc(100% + 14px);
@@ -122,7 +121,6 @@
     -webkit-user-select: none;
   }
 
-  /* 見た目のライン：トラック内で左右7pxオフセットして元の幅に */
   .track-line {
     position: absolute;
     left: 7px;
@@ -297,10 +295,10 @@
   <!-- 第一印象 -->
   <div style="margin-top: 0; padding-top: 0;">
     <div style="display:flex; align-items:baseline; gap:8px;">
-      <span style="font-size:14px; font-weight:700; white-space:nowrap;">第一印象：</span>
+      <span style="font-size:11px; font-weight:700; white-space:nowrap;">第一印象：</span>
       <input type="text" id="impression"
         style="flex:1; border:none; border-bottom:1.5px solid #999; outline:none;
-               font-size:14px; font-weight:700; font-family:'Meiryo','メイリオ',sans-serif;
+               font-size:11px; font-weight:700; font-family:'Meiryo','メイリオ',sans-serif;
                background:transparent; padding:2px 0; width:100%;"
         placeholder="">
     </div>
@@ -309,7 +307,6 @@
 
 <script>
 (function() {
-  // 半幅スライダーの幅をセット
   function setHalfWidths() {
     var fullArea = document.querySelector('.slider-area');
     if (!fullArea) return;
@@ -319,7 +316,6 @@
     });
   }
 
-  // 目盛りドットを生成
   function buildDots(dotsEl, ticks) {
     dotsEl.innerHTML = '';
     for (var i = 0; i < ticks; i++) {
@@ -333,7 +329,6 @@
     }
   }
 
-  // pct(0〜100)を赤丸にセット（トラックが左右7px広いので補正）
   function setDotPct(dotEl, pct) {
     var track = dotEl.parentElement;
     var trackWidth = track.offsetWidth;
@@ -342,7 +337,6 @@
     dotEl.style.left = px + 'px';
   }
 
-  // 各trackを初期化
   function initTrack(track) {
     var ticks      = parseInt(track.dataset.ticks, 10);
     var defaultPct = parseFloat(track.dataset.default);
@@ -356,7 +350,6 @@
 
     function pctFrom(clientX) {
       var rect = track.getBoundingClientRect();
-      // トラックは左右7px広がっているので、内側の有効幅で計算
       return Math.max(0, Math.min(100, (clientX - rect.left - 7) / (rect.width - 14) * 100));
     }
 
@@ -376,7 +369,6 @@
       dotEl.classList.remove('active');
     }
 
-    // --- タッチイベント（iOS優先） ---
     function addTouch(el) {
       el.addEventListener('touchstart', function(e) {
         e.preventDefault();
@@ -390,7 +382,6 @@
       el.addEventListener('touchcancel', onEnd, { passive: true });
     }
 
-    // --- マウスイベント（PC用） ---
     function addMouse(el) {
       el.addEventListener('mousedown', function(e) {
         e.preventDefault();
@@ -402,20 +393,17 @@
       });
     }
 
-    // トラック全体と赤丸の両方にイベント登録
     addTouch(track);
     addTouch(dotEl);
     addMouse(track);
     addMouse(dotEl);
 
-    // リセット用
     track._reset = function() {
       curPct = defaultPct;
       setDotPct(dotEl, curPct);
     };
   }
 
-  // リセット
   function resetAll() {
     document.querySelectorAll('.track').forEach(function(t) {
       if (t._reset) t._reset();
@@ -424,7 +412,6 @@
     document.querySelector('.title-input').value = '純米吟醸　無濾過';
   }
 
-  // 初期化
   window.addEventListener('load', function() {
     setTimeout(function() {
       setHalfWidths();
