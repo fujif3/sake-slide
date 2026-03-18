@@ -151,8 +151,8 @@
   .pink-dot {
     position: absolute;
     top: 50%;
-    width: 17px;
-    height: 17px;
+    width: 13px;
+    height: 13px;
     background: #e8336a;
     border-radius: 50%;
     transform: translate(-50%, -50%);
@@ -310,7 +310,7 @@
   function setHalfWidths() {
     var fullArea = document.querySelector('.slider-area');
     if (!fullArea) return;
-    var halfWidth = fullArea.offsetWidth / 2;
+    var halfWidth = fullArea.offsetWidth / 2 + 8;
     document.querySelectorAll('.slider-area-half').forEach(function(el) {
       el.style.width = halfWidth + 'px';
     });
@@ -318,6 +318,10 @@
 
   function buildDots(dotsEl, ticks) {
     dotsEl.innerHTML = '';
+    if (ticks === 3) {
+      dotsEl.style.left = '10px';  /* 7px + 3px */
+      dotsEl.style.right = '4px';  /* 7px - 3px */
+    }
     for (var i = 0; i < ticks; i++) {
       var d = document.createElement('div');
       d.className = 'tick-dot';
