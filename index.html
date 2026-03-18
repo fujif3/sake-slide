@@ -319,7 +319,7 @@
   function buildDots(dotsEl, ticks) {
     dotsEl.innerHTML = '';
     if (ticks === 3) {
-      dotsEl.style.left = '10px';  /* 7px + 3px */
+      dotsEl.style.left = '7px';  /* 7px + 3px */
       dotsEl.style.right = '4px';  /* 7px - 3px */
     }
     for (var i = 0; i < ticks; i++) {
@@ -335,9 +335,11 @@
 
   function setDotPct(dotEl, pct) {
     var track = dotEl.parentElement;
+    var ticks = parseInt(track.dataset.ticks, 10);
     var trackWidth = track.offsetWidth;
     var innerWidth = trackWidth - 14;
     var px = 7 + (innerWidth * Math.max(0, Math.min(100, pct)) / 100);
+    if (ticks === 3 && pct === 100) px -= 2;
     dotEl.style.left = px + 'px';
   }
 
