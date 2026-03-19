@@ -13,26 +13,24 @@
     font-weight: 700;
     display: flex;
     justify-content: center;
-    padding: 60px 10px 10px;
+    padding: 80px 0px 10px;
     min-height: unset;
   }
 
+  /* 枠線の幅と下辺の余白のみを調整 */
   .container {
-    width: 95%;
-    max-width: 400px;
+    width: 95%;           /* 画面幅一杯に */
+    max-width: 400px;     /* iPhone 15 Plus基準 */
     margin: 0 auto;
     border: 1.5px solid rgba(122,122,42,0.2);
     border-radius: 6px;
-    /* 【修正箇所】下側の余白を 2em から 3.5em に増やしました。
-       これで「第一印象」の行の下に約1行分以上の空きができます */
-    padding: 8px 0.8em 3.5em;
-    background: #fff;
+    padding: 4px 0.5em 3.5em; /* 下辺を一行分(3.5em)下げました */
   }
 
   .title-input {
     display: block;
     text-align: center;
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 900;
     letter-spacing: 0.1em;
     margin-bottom: 0;
@@ -42,22 +40,21 @@
     background: transparent;
     width: 100%;
     font-family: inherit;
-    padding: 4px 0;
-    line-height: 1.2;
+    padding: 0;
+    line-height: 1;
   }
 
   .divider {
     border: none;
     border-top: 1.5px solid #999;
-    margin: 2px auto 16px;
+    margin: 1px auto 16px;
     width: 70%;
   }
 
   .row {
     display: flex;
     align-items: center;
-    margin-bottom: 8px;
-    width: 100%;
+    margin-bottom: 5px;
   }
 
   .label {
@@ -73,22 +70,25 @@
     align-items: center;
     justify-content: center;
     border-radius: 4px;
-    margin-right: 15px;
+    margin-right: 20px;
   }
 
   .slider-area {
     flex: 1;
     position: relative;
+    padding-top: 0px;
   }
 
   .slider-area-half {
+    flex-shrink: 0;
     position: relative;
+    padding-top: 0px;
   }
 
   .tick-labels {
     position: relative;
-    height: 16px;
-    margin-bottom: 2px;
+    height: 14px;
+    margin-bottom: 0px;
   }
 
   .tick-label {
@@ -105,7 +105,7 @@
 
   .track-wrapper {
     position: relative;
-    height: 24px;
+    height: 22px;
     display: flex;
     align-items: center;
   }
@@ -114,7 +114,7 @@
     position: relative;
     width: calc(100% + 14px);
     margin-left: -7px;
-    height: 24px;
+    height: 22px;
     display: flex;
     align-items: center;
     cursor: pointer;
@@ -154,14 +154,19 @@
   .pink-dot {
     position: absolute;
     top: 50%;
-    width: 14px;
-    height: 14px;
+    width: 13px;
+    height: 13px;
     background: #e8336a;
     border-radius: 50%;
     transform: translate(-50%, -50%);
     z-index: 10;
     pointer-events: auto;
     transition: box-shadow 0.12s;
+  }
+
+  /* タッチ時の二重円を復元 */
+  .pink-dot.active {
+    box-shadow: 0 0 0 8px rgba(232,51,106,0.25);
   }
 </style>
 </head>
@@ -300,7 +305,7 @@
   function setHalfWidths() {
     var fullArea = document.querySelector('.slider-area');
     if (!fullArea) return;
-    var halfWidth = (fullArea.offsetWidth / 2) + 12;
+    var halfWidth = fullArea.offsetWidth / 2 + 8;
     document.querySelectorAll('.slider-area-half').forEach(function(el) {
       el.style.width = halfWidth + 'px';
     });
@@ -311,9 +316,6 @@
     if (ticks === 3) {
       dotsEl.style.left = '7px';
       dotsEl.style.right = '4px';
-    } else {
-      dotsEl.style.left = '7px';
-      dotsEl.style.right = '7px';
     }
     for (var i = 0; i < ticks; i++) {
       var d = document.createElement('div');
@@ -367,22 +369,34 @@
       dotEl.classList.remove('active');
     }
 
-    track.addEventListener('touchstart', function(e) {
-      e.preventDefault();
-      onStart(e.touches[0].clientX);
-    }, { passive: false });
-    window.addEventListener('touchmove', function(e) {
-      if (dragging) { e.preventDefault(); onMove(e.touches[0].clientX); }
-    }, { passive: false });
-    window.addEventListener('touchend', onEnd);
+    /* 指をずらしても操作可能な元の検知ロジックを復元 */
+    function addTouch(el) {
+      el.addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        onStart(e.touches[0].clientX);
+      }, { passive: false });
+      el.addEventListener('touchmove', function(e) {
+        e.preventDefault();
+        onMove(e.touches[0].clientX);
+      }, { passive: false });
+      el.addEventListener('touchend', onEnd);
+      el.addEventListener('touchcancel', onEnd);
+    }
 
-    track.addEventListener('mousedown', function(e) {
-      onStart(e.clientX);
-      function mm(ev) { onMove(ev.clientX); }
-      function mu() { onEnd(); window.removeEventListener('mousemove', mm); window.removeEventListener('mouseup', mu); }
-      window.addEventListener('mousemove', mm);
-      window.addEventListener('mouseup', mu);
-    });
+    function addMouse(el) {
+      el.addEventListener('mousedown', function(e) {
+        onStart(e.clientX);
+        function mm(ev) { onMove(ev.clientX); }
+        function mu() { onEnd(); document.removeEventListener('mousemove', mm); document.removeEventListener('mouseup', mu); }
+        document.addEventListener('mousemove', mm);
+        document.addEventListener('mouseup', mu);
+      });
+    }
+
+    addTouch(track);
+    addTouch(dotEl);
+    addMouse(track);
+    addMouse(dotEl);
 
     track._reset = function() {
       curPct = defaultPct;
@@ -391,18 +405,13 @@
   }
 
   window.addEventListener('load', function() {
-    setHalfWidths();
-    document.querySelectorAll('.track').forEach(initTrack);
+    setTimeout(function() {
+      setHalfWidths();
+      document.querySelectorAll('.track').forEach(initTrack);
+    }, 50);
   });
 
-  window.addEventListener('resize', function() {
-    setHalfWidths();
-    document.querySelectorAll('.pink-dot').forEach(function(dot) {
-      var track = dot.parentElement;
-      var currentPct = (parseFloat(dot.style.left) - 7) / (track.offsetWidth - 14) * 100;
-      setDotPct(dot, currentPct);
-    });
-  });
+  window.addEventListener('resize', setHalfWidths);
 
   document.getElementById('reset-btn').addEventListener('click', function() {
     document.querySelectorAll('.track').forEach(function(t) { if (t._reset) t._reset(); });
