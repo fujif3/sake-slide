@@ -17,14 +17,13 @@
     min-height: unset;
   }
 
-  /* 枠線の幅と下辺の余白のみを調整 */
   .container {
-    width: 95%;           /* 画面幅一杯に */
-    max-width: 400px;     /* iPhone 15 Plus基準 */
+    width: 95%;
+    max-width: 400px;
     margin: 0 auto;
     border: 1.5px solid rgba(122,122,42,0.2);
     border-radius: 6px;
-    padding: 4px 0.5em 3.5em; /* 下辺を一行分(3.5em)下げました */
+    padding: 4px 0.5em 3.5em;
   }
 
   .title-input {
@@ -93,7 +92,8 @@
 
   .tick-label {
     position: absolute;
-    font-size: 10px;
+    /* 【さらに修正】フォントサイズを 8px に設定 */
+    font-size: 8px;
     font-family: inherit;
     font-weight: 700;
     color: #333;
@@ -164,7 +164,6 @@
     transition: box-shadow 0.12s;
   }
 
-  /* タッチ時の二重円を復元 */
   .pink-dot.active {
     box-shadow: 0 0 0 8px rgba(232,51,106,0.25);
   }
@@ -369,7 +368,6 @@
       dotEl.classList.remove('active');
     }
 
-    /* 指をずらしても操作可能な元の検知ロジックを復元 */
     function addTouch(el) {
       el.addEventListener('touchstart', function(e) {
         e.preventDefault();
