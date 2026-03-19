@@ -13,16 +13,16 @@
     font-weight: 700;
     display: flex;
     justify-content: center;
-    /* 左右に少しだけ(5px)余白を持たせると枠線が画面端に張り付きすぎず綺麗です */
-    padding: 60px 5px 10px;
+    /* 上下の余白と、画面端に枠線が触れない程度の左右余白(10px) */
+    padding: 60px 10px 10px;
     min-height: unset;
   }
 
   .container {
-    /* 固定幅を解除し、100%に設定 */
-    width: 100%;
-    /* 大きな画面で見るときのために最大幅を設定（お好みで調整してください） */
-    max-width: 450px;
+    /* 画面幅の95%を使いつつ、iPhone 15 Plus等で「良い具合」に見える400pxで固定 */
+    width: 95%;
+    max-width: 400px;
+    margin: 0 auto;
     border: 1.5px solid rgba(122,122,42,0.2);
     border-radius: 6px;
     padding: 8px 0.8em 2em;
@@ -73,7 +73,7 @@
     align-items: center;
     justify-content: center;
     border-radius: 4px;
-    margin-right: 15px; /* 余白を少し詰めました */
+    margin-right: 15px;
   }
 
   .slider-area {
@@ -81,9 +81,8 @@
     position: relative;
   }
 
-  /* 半幅エリアも親の幅に対して柔軟になるよう調整 */
   .slider-area-half {
-    width: 55%; 
+    /* JavaScriptで動的に調整されます */
     position: relative;
   }
 
@@ -164,9 +163,6 @@
     z-index: 10;
     pointer-events: auto;
     transition: box-shadow 0.12s;
-  }
-  .pink-dot.active {
-    box-shadow: 0 0 0 8px rgba(232,51,106,0.25);
   }
 </style>
 </head>
@@ -302,11 +298,9 @@
 
 <script>
 (function() {
-  // slider-area-half の幅を slider-area の半分＋アルファに調整する関数
   function setHalfWidths() {
     var fullArea = document.querySelector('.slider-area');
     if (!fullArea) return;
-    // 画面幅に合わせて動的に計算
     var halfWidth = (fullArea.offsetWidth / 2) + 12;
     document.querySelectorAll('.slider-area-half').forEach(function(el) {
       el.style.width = halfWidth + 'px';
@@ -315,7 +309,6 @@
 
   function buildDots(dotsEl, ticks) {
     dotsEl.innerHTML = '';
-    // 3目盛りの時の微調整用
     if (ticks === 3) {
       dotsEl.style.left = '7px';
       dotsEl.style.right = '4px';
@@ -327,8 +320,7 @@
       var d = document.createElement('div');
       d.className = 'tick-dot';
       if (ticks === 5 && i === 2) {
-        d.style.width = '10px';
-        d.style.height = '10px';
+        d.style.width = '10px'; d.style.height = '10px';
       }
       dotsEl.appendChild(d);
     }
@@ -340,41 +332,36 @@
     var trackWidth = track.offsetWidth;
     var innerWidth = trackWidth - 14;
     var px = 7 + (innerWidth * Math.max(0, Math.min(100, pct)) / 100);
-    // 3目盛りの右端微調整
     if (ticks === 3 && pct === 100) px -= 2;
     dotEl.style.left = px + 'px';
   }
 
   function initTrack(track) {
-    var ticks      = parseInt(track.dataset.ticks, 10);
+    var ticks = parseInt(track.dataset.ticks, 10);
     var defaultPct = parseFloat(track.dataset.default);
-    var dotsEl     = track.querySelector('.tick-dots');
-    var dotEl      = track.querySelector('.pink-dot');
-    var curPct     = defaultPct;
-    var dragging   = false;
+    var dotsEl = track.querySelector('.tick-dots');
+    var dotEl = track.querySelector('.pink-dot');
+    var curPct = defaultPct;
+    var dragging = false;
 
     buildDots(dotsEl, ticks);
     setDotPct(dotEl, curPct);
 
     function pctFrom(clientX) {
       var rect = track.getBoundingClientRect();
-      var val = (clientX - rect.left - 7) / (rect.width - 14) * 100;
-      return Math.max(0, Math.min(100, val));
-    }
-
-    function update(clientX) {
-      curPct = pctFrom(clientX);
-      setDotPct(dotEl, curPct);
+      return Math.max(0, Math.min(100, (clientX - rect.left - 7) / (rect.width - 14) * 100));
     }
 
     function onStart(clientX) {
       dragging = true;
       dotEl.classList.add('active');
-      update(clientX);
+      curPct = pctFrom(clientX);
+      setDotPct(dotEl, curPct);
     }
     function onMove(clientX) {
       if (!dragging) return;
-      update(clientX);
+      curPct = pctFrom(clientX);
+      setDotPct(dotEl, curPct);
     }
     function onEnd() {
       dragging = false;
@@ -386,10 +373,7 @@
       onStart(e.touches[0].clientX);
     }, { passive: false });
     window.addEventListener('touchmove', function(e) {
-      if (dragging) {
-        e.preventDefault();
-        onMove(e.touches[0].clientX);
-      }
+      if (dragging) { e.preventDefault(); onMove(e.touches[0].clientX); }
     }, { passive: false });
     window.addEventListener('touchend', onEnd);
 
@@ -407,14 +391,6 @@
     };
   }
 
-  function resetAll() {
-    document.querySelectorAll('.track').forEach(function(t) {
-      if (t._reset) t._reset();
-    });
-    document.getElementById('impression').value = '';
-    document.querySelector('.title-input').value = '純米吟醸　無濾過';
-  }
-
   window.addEventListener('load', function() {
     setHalfWidths();
     document.querySelectorAll('.track').forEach(initTrack);
@@ -422,20 +398,20 @@
 
   window.addEventListener('resize', function() {
     setHalfWidths();
-    // リサイズ時にドットの位置を再計算
     document.querySelectorAll('.pink-dot').forEach(function(dot) {
-      // 現在の位置(px)ではなく%で再配置する必要があるため簡易的に
+      // リサイズ時に正しいパーセントで再配置
       var track = dot.parentElement;
-      var rect = dot.getBoundingClientRect();
-      var trackRect = track.getBoundingClientRect();
-      var pct = (rect.left + rect.width/2 - trackRect.left - 7) / (trackRect.width - 14) * 100;
-      setDotPct(dot, pct);
+      var currentPct = (parseFloat(dot.style.left) - 7) / (track.offsetWidth - 14) * 100;
+      setDotPct(dot, currentPct);
     });
   });
 
-  document.getElementById('reset-btn').addEventListener('click', resetAll);
+  document.getElementById('reset-btn').addEventListener('click', function() {
+    document.querySelectorAll('.track').forEach(function(t) { if (t._reset) t._reset(); });
+    document.getElementById('impression').value = '';
+    document.querySelector('.title-input').value = '純米吟醸　無濾過';
+  });
 })();
 </script>
-
 </body>
 </html>
