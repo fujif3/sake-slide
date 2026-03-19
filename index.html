@@ -23,7 +23,8 @@
     margin: 0 auto;
     border: 1.5px solid rgba(122,122,42,0.2);
     border-radius: 6px;
-    padding: 4px 0.5em 3.5em;
+    /* 【修正】下辺の余白を 3.5em から 4.0em へ微増（キャプション被り対策） */
+    padding: 4px 0.5em 4.0em;
   }
 
   .title-input {
@@ -92,7 +93,6 @@
 
   .tick-label {
     position: absolute;
-    /* 【さらに修正】フォントサイズを 8px に設定 */
     font-size: 8px;
     font-family: inherit;
     font-weight: 700;
@@ -300,6 +300,7 @@
 </div>
 
 <script>
+/* JavaScript部分は変更なし */
 (function() {
   function setHalfWidths() {
     var fullArea = document.querySelector('.slider-area');
