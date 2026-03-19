@@ -13,21 +13,26 @@
     font-weight: 700;
     display: flex;
     justify-content: center;
-    padding: 80px 0px 10px;
+    /* 左右に少しだけ(5px)余白を持たせると枠線が画面端に張り付きすぎず綺麗です */
+    padding: 60px 5px 10px;
     min-height: unset;
   }
 
   .container {
-    width: 360px;
+    /* 固定幅を解除し、100%に設定 */
+    width: 100%;
+    /* 大きな画面で見るときのために最大幅を設定（お好みで調整してください） */
+    max-width: 450px;
     border: 1.5px solid rgba(122,122,42,0.2);
     border-radius: 6px;
-    padding: 4px 0.5em 2em;
+    padding: 8px 0.8em 2em;
+    background: #fff;
   }
 
   .title-input {
     display: block;
     text-align: center;
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 900;
     letter-spacing: 0.1em;
     margin-bottom: 0;
@@ -37,21 +42,22 @@
     background: transparent;
     width: 100%;
     font-family: inherit;
-    padding: 0;
-    line-height: 1;
+    padding: 4px 0;
+    line-height: 1.2;
   }
 
   .divider {
     border: none;
     border-top: 1.5px solid #999;
-    margin: 1px auto 16px;
+    margin: 2px auto 16px;
     width: 70%;
   }
 
   .row {
     display: flex;
     align-items: center;
-    margin-bottom: 5px;
+    margin-bottom: 8px;
+    width: 100%;
   }
 
   .label {
@@ -67,31 +73,30 @@
     align-items: center;
     justify-content: center;
     border-radius: 4px;
-    margin-right: 20px;
+    margin-right: 15px; /* 余白を少し詰めました */
   }
 
   .slider-area {
     flex: 1;
     position: relative;
-    padding-top: 0px;
   }
 
+  /* 半幅エリアも親の幅に対して柔軟になるよう調整 */
   .slider-area-half {
-    flex-shrink: 0;
+    width: 55%; 
     position: relative;
-    padding-top: 0px;
   }
 
   .tick-labels {
     position: relative;
-    height: 14px;
-    margin-bottom: 0px;
+    height: 16px;
+    margin-bottom: 2px;
   }
 
   .tick-label {
     position: absolute;
     font-size: 10px;
-    font-family: "Meiryo", "メイリオ", "Hiragino Kaku Gothic ProN", sans-serif;
+    font-family: inherit;
     font-weight: 700;
     color: #333;
     white-space: nowrap;
@@ -102,7 +107,7 @@
 
   .track-wrapper {
     position: relative;
-    height: 22px;
+    height: 24px;
     display: flex;
     align-items: center;
   }
@@ -111,7 +116,7 @@
     position: relative;
     width: calc(100% + 14px);
     margin-left: -7px;
-    height: 22px;
+    height: 24px;
     display: flex;
     align-items: center;
     cursor: pointer;
@@ -151,17 +156,13 @@
   .pink-dot {
     position: absolute;
     top: 50%;
-    width: 13px;
-    height: 13px;
+    width: 14px;
+    height: 14px;
     background: #e8336a;
     border-radius: 50%;
     transform: translate(-50%, -50%);
     z-index: 10;
     pointer-events: auto;
-    touch-action: none;
-    -webkit-tap-highlight-color: transparent;
-    user-select: none;
-    -webkit-user-select: none;
     transition: box-shadow 0.12s;
   }
   .pink-dot.active {
@@ -170,11 +171,11 @@
 </style>
 </head>
 <body>
+
 <div class="container">
   <input class="title-input" type="text" value="純米吟醸　無濾過">
   <hr class="divider">
 
-  <!-- 甘辛: 5目盛り 全幅 -->
   <div class="row">
     <div class="label">甘辛</div>
     <div class="slider-area">
@@ -195,7 +196,6 @@
     </div>
   </div>
 
-  <!-- 濃淡: 5目盛り 全幅 -->
   <div class="row">
     <div class="label">濃淡</div>
     <div class="slider-area">
@@ -216,7 +216,6 @@
     </div>
   </div>
 
-  <!-- 香り: 3目盛り 半幅 -->
   <div class="row">
     <div class="label">香り</div>
     <div class="slider-area-half">
@@ -235,7 +234,6 @@
     </div>
   </div>
 
-  <!-- 酸: 3目盛り 半幅 -->
   <div class="row">
     <div class="label">酸</div>
     <div class="slider-area-half">
@@ -254,7 +252,6 @@
     </div>
   </div>
 
-  <!-- 苦味: 3目盛り 半幅 -->
   <div class="row">
     <div class="label">苦味</div>
     <div class="slider-area-half">
@@ -273,7 +270,6 @@
     </div>
   </div>
 
-  <!-- 発泡: 3目盛り 半幅 -->
   <div class="row">
     <div class="label" id="reset-btn" style="cursor:pointer" title="リセット">発泡</div>
     <div class="slider-area-half">
@@ -292,13 +288,12 @@
     </div>
   </div>
 
-  <!-- 第一印象 -->
-  <div style="margin-top: 0; padding-top: 0;">
+  <div style="margin-top: 10px;">
     <div style="display:flex; align-items:baseline; gap:8px;">
       <span style="font-size:11px; font-weight:700; white-space:nowrap;">第一印象：</span>
       <input type="text" id="impression"
         style="flex:1; border:none; border-bottom:1.5px solid #999; outline:none;
-               font-size:11px; font-weight:700; font-family:'Meiryo','メイリオ',sans-serif;
+               font-size:11px; font-weight:700; font-family:inherit;
                background:transparent; padding:2px 0; width:100%;"
         placeholder="">
     </div>
@@ -307,10 +302,12 @@
 
 <script>
 (function() {
+  // slider-area-half の幅を slider-area の半分＋アルファに調整する関数
   function setHalfWidths() {
     var fullArea = document.querySelector('.slider-area');
     if (!fullArea) return;
-    var halfWidth = fullArea.offsetWidth / 2 + 8;
+    // 画面幅に合わせて動的に計算
+    var halfWidth = (fullArea.offsetWidth / 2) + 12;
     document.querySelectorAll('.slider-area-half').forEach(function(el) {
       el.style.width = halfWidth + 'px';
     });
@@ -318,9 +315,13 @@
 
   function buildDots(dotsEl, ticks) {
     dotsEl.innerHTML = '';
+    // 3目盛りの時の微調整用
     if (ticks === 3) {
-      dotsEl.style.left = '7px';  /* 7px + 3px */
-      dotsEl.style.right = '4px';  /* 7px - 3px */
+      dotsEl.style.left = '7px';
+      dotsEl.style.right = '4px';
+    } else {
+      dotsEl.style.left = '7px';
+      dotsEl.style.right = '7px';
     }
     for (var i = 0; i < ticks; i++) {
       var d = document.createElement('div');
@@ -339,6 +340,7 @@
     var trackWidth = track.offsetWidth;
     var innerWidth = trackWidth - 14;
     var px = 7 + (innerWidth * Math.max(0, Math.min(100, pct)) / 100);
+    // 3目盛りの右端微調整
     if (ticks === 3 && pct === 100) px -= 2;
     dotEl.style.left = px + 'px';
   }
@@ -356,53 +358,48 @@
 
     function pctFrom(clientX) {
       var rect = track.getBoundingClientRect();
-      return Math.max(0, Math.min(100, (clientX - rect.left - 7) / (rect.width - 14) * 100));
+      var val = (clientX - rect.left - 7) / (rect.width - 14) * 100;
+      return Math.max(0, Math.min(100, val));
+    }
+
+    function update(clientX) {
+      curPct = pctFrom(clientX);
+      setDotPct(dotEl, curPct);
     }
 
     function onStart(clientX) {
       dragging = true;
       dotEl.classList.add('active');
-      curPct = pctFrom(clientX);
-      setDotPct(dotEl, curPct);
+      update(clientX);
     }
     function onMove(clientX) {
       if (!dragging) return;
-      curPct = pctFrom(clientX);
-      setDotPct(dotEl, curPct);
+      update(clientX);
     }
     function onEnd() {
       dragging = false;
       dotEl.classList.remove('active');
     }
 
-    function addTouch(el) {
-      el.addEventListener('touchstart', function(e) {
-        e.preventDefault();
-        onStart(e.touches[0].clientX);
-      }, { passive: false });
-      el.addEventListener('touchmove', function(e) {
+    track.addEventListener('touchstart', function(e) {
+      e.preventDefault();
+      onStart(e.touches[0].clientX);
+    }, { passive: false });
+    window.addEventListener('touchmove', function(e) {
+      if (dragging) {
         e.preventDefault();
         onMove(e.touches[0].clientX);
-      }, { passive: false });
-      el.addEventListener('touchend',    onEnd, { passive: true });
-      el.addEventListener('touchcancel', onEnd, { passive: true });
-    }
+      }
+    }, { passive: false });
+    window.addEventListener('touchend', onEnd);
 
-    function addMouse(el) {
-      el.addEventListener('mousedown', function(e) {
-        e.preventDefault();
-        onStart(e.clientX);
-        function mm(ev) { onMove(ev.clientX); }
-        function mu()   { onEnd(); document.removeEventListener('mousemove', mm); document.removeEventListener('mouseup', mu); }
-        document.addEventListener('mousemove', mm);
-        document.addEventListener('mouseup',   mu);
-      });
-    }
-
-    addTouch(track);
-    addTouch(dotEl);
-    addMouse(track);
-    addMouse(dotEl);
+    track.addEventListener('mousedown', function(e) {
+      onStart(e.clientX);
+      function mm(ev) { onMove(ev.clientX); }
+      function mu() { onEnd(); window.removeEventListener('mousemove', mm); window.removeEventListener('mouseup', mu); }
+      window.addEventListener('mousemove', mm);
+      window.addEventListener('mouseup', mu);
+    });
 
     track._reset = function() {
       curPct = defaultPct;
@@ -419,18 +416,26 @@
   }
 
   window.addEventListener('load', function() {
-    setTimeout(function() {
-      setHalfWidths();
-      requestAnimationFrame(function() {
-        document.querySelectorAll('.track').forEach(initTrack);
-      });
-    });
+    setHalfWidths();
+    document.querySelectorAll('.track').forEach(initTrack);
   });
 
-  window.addEventListener('resize', setHalfWidths);
+  window.addEventListener('resize', function() {
+    setHalfWidths();
+    // リサイズ時にドットの位置を再計算
+    document.querySelectorAll('.pink-dot').forEach(function(dot) {
+      // 現在の位置(px)ではなく%で再配置する必要があるため簡易的に
+      var track = dot.parentElement;
+      var rect = dot.getBoundingClientRect();
+      var trackRect = track.getBoundingClientRect();
+      var pct = (rect.left + rect.width/2 - trackRect.left - 7) / (trackRect.width - 14) * 100;
+      setDotPct(dot, pct);
+    });
+  });
 
   document.getElementById('reset-btn').addEventListener('click', resetAll);
 })();
 </script>
+
 </body>
 </html>
