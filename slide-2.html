@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>酒質チャート</title>
+<style>
+    :root {
+        --primary-blue: #000080;
+        --thumb-color: #ff4d6d;
+        --dot-color: #2c3e50;
+        --track-color: #e0e0e0;
+        --bg-color: #f4f4f4;
+        --input-bg: #ffffff;
+        --input-border: #cccccc;
+    }
+
+    body {
+        font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+        background-color: #fff;
+        display: flex;
+        justify-content: center;
+        padding: 20px;
+        margin: 0;
+    }
+
+    .chart-container {
+        width: 100%;
+        max-width: 800px;
+        background-color: var(--bg-color);
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        margin-top: 60px; /* 上段空白2行分 */
+    }
+
+    .header-input-wrapper {
+        text-align: center;
+        margin-bottom: 30px;
+        border-bottom: 2px solid #ddd;
+        padding-bottom: 10px;
+    }
+
+    .header-input {
+        font-size: 24px;
+        font-weight: bold;
+        color: #333;
+        letter-spacing: 0.1em;
+        text-align: center;
+        width: 100%;
+        border: none;
+        background: transparent;
+        font-family: inherit;
+        padding: 5px;
+    }
+    .header-input:focus {
+        outline: none;
+        border-bottom: 1px solid var(--primary-blue);
+    }
+    .header-input::placeholder {
+        color: #aaa;
+    }
+
+    .sake-row {
+        display: flex;
+        align-items: center;
+        margin-bottom: 25px;
+        position: relative;
+    }
+
+    .label-box {
+        width: 80px;
+        height: 50px;
+        background-color: var(--primary-blue);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 18px;
+        border-radius: 8px;
+        flex-shrink: 0;
+        margin-right: 20px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        transition: background-color 0.2s, transform 0.1s;
+    }
+
+    /* 発泡タイル（リセットボタン） */
+    .reset-trigger {
+        cursor: pointer;
+        position: relative;
+        background-color: var(--primary-blue);
+        color: white;
+        transition: background-color 0.2s, color 0.2s;
+    }
+    .reset-trigger::before {
+        content: 'リセット';
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 18px;
+        color: #333;
+        opacity: 0;
+        transition: opacity 0.2s;
+        pointer-events: none;
+    }
+    .reset-trigger:hover {
+        background-color: #BBF2A0;
+        color: transparent;
+    }
+    .reset-trigger:hover::before {
+        opacity: 1;
+    }
+    .reset-trigger:active {
+        transform: scale(0.96);
+    }
+
+    .slider-wrapper {
+        flex-grow: 1;
+        min-width: 300px;
+        position: relative;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        box-sizing: border-box;
+        overflow: visible;
+    }
+
+    /* トラック帯をslider-wrapperの疑似要素で再現（z-index:0、最背面） */
+    .slider-wrapper::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 0;
+        width: 100%;
+        height: 6px;
+        transform: translateY(-50%);
+        background: var(--track-color);
+        border-radius: 3px;
+        z-index: 0;
+        pointer-events: none;
+    }
+
+    /* short-scaleは左半分のみトラック表示 */
+    .short-scale .slider-wrapper::before {
+        background: linear-gradient(to right, var(--track-color) 50%, transparent 50%);
+    }
+
+    .text-labels {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        pointer-events: none;
+        user-select: none;
+    }
+    
+    .text-labels span {
+        position: absolute;
+        transform: translateX(-50%);
+        white-space: nowrap;
+        font-weight: bold;
+        font-size: 14px;
+        color: #333;
+        text-align: center;
+        padding: 0 4px;
+    }
+
+    /* ★★★ 核心修正：スライダーの重なり順と位置合わせ ★★★ */
+    /* input全体をz-index:4にしてdots-container(z-index:1)より前面に。thumbはinputの一部なので自動的に最前面 */
+    /* margin:-12pxでthumbがトラック端まで届くよう補正 */
+    input[type=range] {
+        -webkit-appearance: none;
+        width: calc(100% + 24px);
+        background: transparent;
+        cursor: pointer;
+        position: relative;
+        z-index: 4;
+        margin: 0 -12px;
+        padding: 0;
+    }
+    input[type=range]:focus { outline: none; }
+
+    /* 2. トラックは透明背景にして縦線が透けて見えるようにする */
+    input[type=range]::-webkit-slider-runnable-track {
+        width: 100%;
+        height: 6px;
+        cursor: pointer;
+        background: transparent;
+        border-radius: 3px;
+        pointer-events: none;
+    }
+    input[type=range]::-moz-range-track {
+        width: 100%;
+        height: 6px;
+        cursor: pointer;
+        background: transparent;
+        border-radius: 3px;
+        pointer-events: none;
+    }
+
+    /* 3. 縦線はthumb(z-index:4)より背面に配置。トラックは透明なので縦線は見える */
+    .dots-container {
+        position: absolute;
+        top: 50%;
+        left: 0;
+        width: 100%;
+        height: 0;
+        transform: translateY(-50%);
+        pointer-events: none;
+        z-index: 1;
+    }
+
+    .dot {
+        position: absolute;
+        width: 2px;
+        height: 14px;
+        background-color: var(--dot-color);
+        border-radius: 1px;
+        transform: translateX(-50%) translateY(-50%);
+        top: 50%;
+        left: 0%;
+        z-index: 1;
+        pointer-events: none;
+    }
+
+    /* 4. 赤丸（thumb）は input 描画の一部として自然に最前面に */
+    input[type=range]::-webkit-slider-thumb {
+        height: 24px;
+        width: 24px;
+        border-radius: 50%;
+        background: var(--thumb-color);
+        cursor: pointer;
+        -webkit-appearance: none;
+        margin-top: -9px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        border: 2px solid white;
+    }
+    input[type=range]::-moz-range-thumb {
+        height: 24px;
+        width: 24px;
+        border: 2px solid white;
+        border-radius: 50%;
+        background: var(--thumb-color);
+        cursor: pointer;
+    }
+
+    .impression-area {
+        margin-top: 40px;
+        padding-top: 10px;
+    }
+    
+    .impression-box {
+        width: 100%;
+        height: 80px;
+        border: 1px solid var(--input-border);
+        border-radius: 4px;
+        background: var(--input-bg);
+        padding: 15px;
+        box-sizing: border-box;
+        font-family: inherit;
+        font-size: 18px;
+        line-height: 1.6;
+        resize: vertical;
+        color: #333;
+    }
+    .impression-box:focus {
+        outline: none;
+        border-color: var(--primary-blue);
+    }
+    .impression-box::placeholder {
+        color: #aaa;
+    }
+</style>
+</head>
+<body>
+
+<div class="chart-container">
+    <div class="header-input-wrapper">
+        <input type="text" id="sake-name" class="header-input" placeholder="日本酒の銘柄を入力">
+    </div>
+
+    <div class="sake-row">
+        <div class="label-box">甘辛</div>
+        <div class="slider-wrapper">
+            <div class="text-labels">
+                <span style="left: 1em">甘口</span>
+                <span style="left: 25%">やや甘口</span>
+                <span style="left: 50%">中口</span>
+                <span style="left: 75%">やや辛口</span>
+                <span style="left: 100%">辛口</span>
+            </div>
+            <div class="dots-container">
+                <div class="dot" style="left: 0%"></div>
+                <div class="dot" style="left: 25%"></div>
+                <div class="dot" style="left: 50%"></div>
+                <div class="dot" style="left: 75%"></div>
+                <div class="dot" style="left: 100%"></div>
+            </div>
+            <input type="range" min="0" max="100" value="50" step="1">
+        </div>
+    </div>
+
+    <div class="sake-row">
+        <div class="label-box">濃淡</div>
+        <div class="slider-wrapper">
+            <div class="text-labels">
+                <span style="left: 1em">濃醇</span>
+                <span style="left: 25%">やや濃醇</span>
+                <span style="left: 50%">普通</span>
+                <span style="left: 75%">やや淡麗</span>
+                <span style="left: 100%">淡麗</span>
+            </div>
+            <div class="dots-container">
+                <div class="dot" style="left: 0%"></div>
+                <div class="dot" style="left: 25%"></div>
+                <div class="dot" style="left: 50%"></div>
+                <div class="dot" style="left: 75%"></div>
+                <div class="dot" style="left: 100%"></div>
+            </div>
+            <input type="range" min="0" max="100" value="50" step="1">
+        </div>
+    </div>
+
+    <div class="sake-row short-scale">
+        <div class="label-box">香り</div>
+        <div class="slider-wrapper">
+            <div class="text-labels">
+                <span style="left: 1em">強い</span>
+                <span style="left: 25%">ややある</span>
+                <span style="left: 50%">普通</span>
+            </div>
+            <div class="dots-container">
+                <div class="dot" style="left: 0%"></div>
+                <div class="dot" style="left: 25%"></div>
+                <div class="dot" style="left: 50%"></div>
+            </div>
+            <input type="range" min="0" max="50" value="25" step="1">
+        </div>
+    </div>
+
+    <div class="sake-row short-scale">
+        <div class="label-box">酸</div>
+        <div class="slider-wrapper">
+            <div class="text-labels">
+                <span style="left: 1em">強い</span>
+                <span style="left: 25%">ややある</span>
+                <span style="left: 50%">無し</span>
+            </div>
+            <div class="dots-container">
+                <div class="dot" style="left: 0%"></div>
+                <div class="dot" style="left: 25%"></div>
+                <div class="dot" style="left: 50%"></div>
+            </div>
+            <input type="range" min="0" max="50" value="25" step="1">
+        </div>
+    </div>
+
+    <div class="sake-row short-scale">
+        <div class="label-box">苦味</div>
+        <div class="slider-wrapper">
+            <div class="text-labels">
+                <span style="left: 1em">強い</span>
+                <span style="left: 25%">ややある</span>
+                <span style="left: 50%">無し</span>
+            </div>
+            <div class="dots-container">
+                <div class="dot" style="left: 0%"></div>
+                <div class="dot" style="left: 25%"></div>
+                <div class="dot" style="left: 50%"></div>
+            </div>
+            <input type="range" min="0" max="50" value="25" step="1">
+        </div>
+    </div>
+
+    <div class="sake-row short-scale">
+        <div class="label-box reset-trigger" id="reset-btn">発泡</div>
+        <div class="slider-wrapper">
+            <div class="text-labels">
+                <span style="left: 1em">強い</span>
+                <span style="left: 25%">ややある</span>
+                <span style="left: 50%">無し</span>
+            </div>
+            <div class="dots-container">
+                <div class="dot" style="left: 0%"></div>
+                <div class="dot" style="left: 25%"></div>
+                <div class="dot" style="left: 50%"></div>
+            </div>
+            <input type="range" min="0" max="50" value="25" step="1">
+        </div>
+    </div>
+
+    <div class="impression-area">
+        <textarea id="impression-text" class="impression-box" placeholder="第一印象を入力..."></textarea>
+    </div>
+</div>
+
+<script>
+    // スライダーのストッパー処理（修正2・5の統合）
+    document.querySelectorAll('input[type="range"]').forEach(slider => {
+        slider.addEventListener('input', function() {
+            // 下4本線(short-scale)は右端(25)で物理的に停止
+            if (this.closest('.short-scale')) {
+                if (this.value > 25) {
+                    this.value = 25;
+                }
+            } else {
+                // 上位2本線は全範囲(0〜100)を端まで正確に移動
+                let max = parseInt(this.getAttribute('max'));
+                if (this.value < 0) this.value = 0;
+                if (this.value > max) this.value = max;
+            }
+        });
+    });
+
+    // リセット機能
+    document.getElementById('reset-btn').addEventListener('click', () => {
+        document.getElementById('sake-name').value = '';
+        document.getElementById('impression-text').value = '';
+        
+        const ranges = document.querySelectorAll('input[type="range"]');
+        ranges.forEach((input, index) => {
+            input.value = index < 2 ? 50 : 25;
+        });
+    });
+</script>
+
+</body>
+</html>
