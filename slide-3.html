@@ -10,7 +10,7 @@
         --thumb-color: #ff4d6d;
         --dot-color: #2c3e50;
         --track-color: #e0e0e0;
-        --bg-color: #f0f0f0; /* ver1と同じ薄いグレー */
+        --bg-color: #f0f0f0;
         --input-bg: #ffffff;
         --input-border: #cccccc;
     }
@@ -26,31 +26,30 @@
         background-color: #fff;
         display: flex;
         justify-content: center;
-        padding: 60px 0px 10px; /* ver1と完全同一の余白 */
+        padding: 40px 0px 10px; /* 上の余白を60pxから40pxにさらに詰め */
     }
 
-    /* ★★★ 外枠コンテナをver1と完全同一（正方形比率用）に修正 ★★★ */
+    /* ★★★ 50:50の完全な正方形を構成するための外枠調整 ★★★ */
     .chart-container {
         width: 95%;
-        max-width: 400px; /* ver1と同じ400pxに制限 */
+        max-width: 400px;
         margin: 0 auto;
         background-color: var(--bg-color);
-        border: 1.5px solid rgba(122,122,42,0.15); /* ver1の枠線 */
+        border: 1.5px solid rgba(122,122,42,0.15);
         border-radius: 6px;
-        padding: 12px 1.5em 3.5em; /* 正方形（50:50）に近づくよう下部余白を最適化 */
+        padding: 12px 1.5em 1.2em; /* 下部余白を3.5emから1.2emへ大幅に詰めて正方形化 */
         box-shadow: 0 4px 15px rgba(0,0,0,0.05);
     }
 
-    /* ★★★ 文字サイズやパーツの大きさをコンテナに合わせてコンパクトに縮小 ★★★ */
     .header-input-wrapper {
         text-align: center;
-        margin-bottom: 20px;
+        margin-bottom: 12px; /* 20pxから12pxに詰め */
         border-bottom: 2px solid #ddd;
-        padding-bottom: 5px;
+        padding-bottom: 3px;
     }
 
     .header-input {
-        font-size: 18px; /* 24pxから18pxに縮小 */
+        font-size: 18px;
         font-weight: bold;
         color: #333;
         letter-spacing: 0.1em;
@@ -59,7 +58,7 @@
         border: none;
         background: transparent;
         font-family: inherit;
-        padding: 5px;
+        padding: 3px;
     }
     .header-input:focus {
         outline: none;
@@ -72,29 +71,27 @@
     .sake-row {
         display: flex;
         align-items: center;
-        margin-bottom: 16px; /* 25pxから16pxにタイト化 */
+        margin-bottom: 10px; /* 16pxから10pxに大幅に詰め */
         position: relative;
     }
 
-    /* タイルボタンのサイズを縮小 */
     .label-box {
-        width: 60px;  /* 80pxから60pxに縮小 */
-        height: 38px; /* 50pxから38pxに縮小 */
+        width: 60px;
+        height: 36px; /* 38pxから36pxに微縮小 */
         background-color: var(--primary-blue);
         color: white;
         display: flex;
         align-items: center;
         justify-content: center;
         font-weight: bold;
-        font-size: 14px; /* 18pxから14pxに縮小 */
+        font-size: 14px;
         border-radius: 6px;
         flex-shrink: 0;
-        margin-right: 15px; /* 20pxから15pxにタイト化 */
+        margin-right: 15px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.15);
         transition: background-color 0.1s, color 0.1s, transform 0.05s;
     }
 
-    /* 発泡リセット用の調整 */
     .reset-trigger {
         cursor: pointer;
         position: relative;
@@ -108,7 +105,7 @@
         align-items: center;
         justify-content: center;
         font-weight: bold;
-        font-size: 13px; /* 縮小 */
+        font-size: 13px;
         color: #333;
         opacity: 0;
         transition: opacity 0.1s;
@@ -124,24 +121,23 @@
         opacity: 1 !important;
     }
 
-    /* スライダー基盤 */
     .slider-area, .slider-area-half {
         position: relative;
-        height: 48px; /* 60pxから48pxにタイト化 */
+        height: 44px; /* 48pxから44pxに詰め */
     }
     .slider-area { flex: 1; }
     .slider-area-half { flex-shrink: 0; }
 
     .text-labels {
         position: relative;
-        height: 18px;
+        height: 16px; /* 18pxから16pxに詰め */
         width: 100%;
     }
     
     .text-labels span {
         position: absolute;
         font-weight: bold;
-        font-size: 10px; /* 14pxから10pxに縮小して重なり防止 */
+        font-size: 10px;
         color: #333;
         white-space: nowrap;
         transform: translateX(-50%);
@@ -151,16 +147,16 @@
 
     .track-wrapper {
         position: relative;
-        height: 30px;
+        height: 28px; /* 30pxから28pxに詰め */
         display: flex;
         align-items: center;
     }
 
     .track {
         position: relative;
-        width: calc(100% + 20px);
-        margin-left: -10px;
-        height: 30px;
+        width: calc(100% + 18px);
+        margin-left: -9px;
+        height: 28px;
         display: flex;
         align-items: center;
         cursor: pointer;
@@ -170,9 +166,9 @@
 
     .track-line {
         position: absolute;
-        left: 10px;
-        right: 10px;
-        height: 5px; /* 6pxから5pxに微細化 */
+        left: 9px;
+        right: 9px;
+        height: 5px;
         background: var(--track-color);
         border-radius: 3px;
         pointer-events: none;
@@ -180,8 +176,8 @@
 
     .tick-dots {
         position: absolute;
-        left: 10px;
-        right: 10px;
+        left: 9px;
+        right: 9px;
         display: flex;
         justify-content: space-between;
         pointer-events: none;
@@ -189,7 +185,7 @@
 
     .tick-dot {
         width: 2px;
-        height: 10px; /* 14pxから10pxに縮小 */
+        height: 10px;
         background-color: var(--dot-color);
         border-radius: 1px;
         flex-shrink: 0;
@@ -198,7 +194,7 @@
     .pink-dot {
         position: absolute;
         top: 50%;
-        width: 18px; /* 24pxから18pxに縮小してコンパクトに */
+        width: 18px;
         height: 18px;
         background: var(--thumb-color);
         border: 2px solid white;
@@ -213,24 +209,24 @@
         box-shadow: 0 0 0 6px rgba(255, 77, 109, 0.25);
     }
 
-    /* テキストエリアのサイズ調整 */
     .impression-area {
-        margin-top: 20px;
-        padding-top: 5px;
+        margin-top: 12px; /* 20pxから12pxに詰め */
+        padding-top: 0;
     }
     
+    /* ★★★ 第一印象の枠をきっちり「2行分」の高さに固定（46px） ★★★ */
     .impression-box {
         width: 100%;
-        height: 65px; /* 80pxから65pxに縮小して全体の縦横比を1:1に調整 */
+        height: 46px; /* 65pxから46pxに縮小し、文字が2行綺麗に収まる高さに固定 */
         border: 1px solid var(--input-border);
         border-radius: 4px;
         background: var(--input-bg);
-        padding: 10px;
+        padding: 5px 10px; /* 上下パディングを狭めて収まりを良く */
         box-sizing: border-box;
         font-family: inherit;
-        font-size: 14px; /* 18pxから14pxに縮小 */
-        line-height: 1.5;
-        resize: vertical;
+        font-size: 13px; /* 14pxから13pxに微調整 */
+        line-height: 1.4; /* 2行が綺麗に収まる行間 */
+        resize: none; /* スクショの枠がズレないよう手動リサイズをオフに */
         color: #333;
     }
     .impression-box:focus {
@@ -362,7 +358,7 @@
     </div>
 
     <div class="impression-area">
-        <textarea id="impression-text" class="impression-box" placeholder="第一印象を入力..."></textarea>
+        <textarea id="impression-text" class="impression-box" placeholder="第一印象を入力..." rows="2"></textarea>
     </div>
 </div>
 
@@ -400,7 +396,7 @@
     function setDotPct(dotEl, pct) {
         var track = dotEl.parentElement;
         var trackWidth = track.offsetWidth;
-        var innerWidth = trackWidth - 18; // thumb補正(18px)に変更
+        var innerWidth = trackWidth - 18; 
         var px = 9 + (innerWidth * Math.max(0, Math.min(100, pct)) / 100);
         dotEl.style.left = px + 'px';
     }
