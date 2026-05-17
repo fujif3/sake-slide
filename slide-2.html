@@ -82,14 +82,14 @@
         flex-shrink: 0;
         margin-right: 20px;
         box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        transition: background-color 0.15s, color 0.15s, transform 0.1s;
+        transition: background-color 0.1s, color 0.1s, transform 0.05s;
     }
 
-    /* 発泡（リセットボタン）のスタイル修正 */
+    /* 発泡（リセットボタン）のベース */
     .reset-trigger {
         cursor: pointer;
         position: relative;
-        -webkit-tap-highlight-color: transparent; /* スマホ特有のタップ時の黒い影を消す */
+        -webkit-tap-highlight-color: transparent; /* スマホのデフォルトのタップ影を無効化 */
     }
     .reset-trigger::before {
         content: 'リセット';
@@ -102,22 +102,18 @@
         font-size: 18px;
         color: #333;
         opacity: 0;
-        transition: opacity 0.15s;
+        transition: opacity 0.1s;
         pointer-events: none;
     }
 
-    /* JavaScriptで「.resetting」がついた瞬間（押した時）だけ色を切り替える */
+    /* 指が触れている（またはPCでクリック中）の間だけこのスタイルが強制発動 */
     .reset-trigger.resetting {
         background-color: #BBF2A0 !important;
         color: transparent !important;
+        transform: scale(0.96);
     }
     .reset-trigger.resetting::before {
         opacity: 1 !important;
-    }
-    
-    /* 押されている時のへこむ演出 */
-    .reset-trigger:active {
-        transform: scale(0.96);
     }
 
     /* スライダー基盤 */
@@ -478,31 +474,44 @@
         }, 80);
     });
 
-    // ★★★ リセットボタンの色変化バグ修正 ★★★
+    // ★★★ 発泡（リセット）ボタンの挙動改善ロジック ★★★
     var resetBtn = document.getElementById('reset-btn');
-    
-    function triggerResetEffect() {
-        // 1. まずリセット用のクラス「.resetting」を付与して黄緑色（リセット文字）にする
-        resetBtn.classList.add('resetting');
-        
-        // 2. テキストやスライダーの値を初期化
+
+    // リセット処理そのものを実行する関数
+    function runResetAction() {
         document.getElementById('sake-name').value = '';
         document.getElementById('impression-text').value = '';
         document.querySelectorAll('.track').forEach(function(t) {
             if (t._reset) t._reset();
         });
-        setTimeout(updateLayout, 50);
-
-        // 3. 0.4秒後に自動的にクラスを外し、スマホでも確実に元の「紺色（発泡）」に戻す
-        setTimeout(function() {
-            resetBtn.classList.remove('resetting');
-        }, 400); 
+        setTimeout(updateLayout, 30);
     }
 
-    // マウスクリック、およびスマホのタッチ両方で同じエフェクト関数を走らせる
-    resetBtn.addEventListener('click', function(e) {
-        triggerResetEffect();
+    // 1. スマホ操作（タッチした瞬間と離した瞬間）
+    resetBtn.addEventListener('touchstart', function(e) {
+        resetBtn.classList.add('resetting'); // 触れた瞬間に「黄緑色（リセット）」へ変更＆縮小
+        runResetAction();                    // 内部データもその場でリセット
+    }, { passive: true });
+
+    resetBtn.addEventListener('touchend', function(e) {
+        resetBtn.classList.remove('resetting'); // 指を離した瞬間に元の「紺色（発泡）」へ戻す
     });
+
+    // 2. PC操作マウス（押し込んだ瞬間と離した瞬間）
+    resetBtn.addEventListener('mousedown', function(e) {
+        resetBtn.classList.add('resetting'); // マウスを押した瞬間に変更
+        runResetAction();
+    });
+
+    resetBtn.addEventListener('mouseup', function(e) {
+        resetBtn.classList.remove('resetting'); // マウスを離した瞬間に戻す
+    });
+
+    // マウスがボタンの外へ外れた際のエスケープ処理
+    resetBtn.addEventListener('mouseleave', function(e) {
+        resetBtn.classList.remove('resetting');
+    });
+
 })();
 </script>
 
