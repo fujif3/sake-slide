@@ -15,6 +15,21 @@
         --input-border: #cccccc;
     }
 
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        /* ★ チャート全体で文字選択・長押しを禁止 ★ */
+        -webkit-user-select: none;
+        user-select: none;
+    }
+
+    /* 銘柄入力欄と第一印象欄だけは文字選択・カーソル移動を許可 */
+    input, textarea {
+        -webkit-user-select: auto !important;
+        user-select: auto !important;
+    }
+
     body {
         font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
         background-color: #fff;
@@ -85,35 +100,26 @@
         transition: background-color 0.1s, color 0.1s, transform 0.05s;
     }
 
-    /* 発泡（リセットボタン）のベース */
+    /* ★★★ 発泡（リセット）タイルの完全ガード＆画像化ロジック ★★★ */
     .reset-trigger {
         cursor: pointer;
         position: relative;
         -webkit-tap-highlight-color: transparent; /* スマホのデフォルトのタップ影を無効化 */
-    }
-    .reset-trigger::before {
-        content: 'リセット';
-        position: absolute;
-        top: 0; left: 0; width: 100%; height: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: bold;
-        font-size: 18px;
-        color: #333;
-        opacity: 0;
-        transition: opacity 0.1s;
-        pointer-events: none;
+        -webkit-touch-callout: none;               /* iOS長押し時のポップアップ（画像保存など）を完全禁止 */
+        color: transparent !important;             /* HTML内のテキストを選択・コピーさせないよう透明化 */
+        
+        /* 通常時の「発泡」文字をSVG画像として背景配置（ボヤけずクッキリ描写） */
+        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="80" height="50" viewBox="0 0 80 50"><text x="50%" y="50%" font-family="sans-serif" font-weight="bold" font-size="18" fill="white" text-anchor="middle" dominant-baseline="central">発泡</text></svg>');
+        background-repeat: no-repeat;
+        background-position: center;
     }
 
-    /* 指が触れている（またはPCでクリック中）の間だけこのスタイルが強制発動 */
+    /* 指が触れている（またはPCでクリック中）の間だけ強制発動 */
     .reset-trigger.resetting {
         background-color: #BBF2A0 !important;
-        color: transparent !important;
         transform: scale(0.96);
-    }
-    .reset-trigger.resetting::before {
-        opacity: 1 !important;
+        /* タッチ中の「リセット」文字もSVG画像で切り替え */
+        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="80" height="50" viewBox="0 0 80 50"><text x="50%" y="50%" font-family="sans-serif" font-weight="bold" font-size="17" fill="%23333333" text-anchor="middle" dominant-baseline="central">リセット</text></svg>');
     }
 
     /* スライダー基盤 */
@@ -335,7 +341,7 @@
     </div>
 
     <div class="sake-row">
-        <div class="label-box reset-trigger" id="reset-btn">発泡</div>
+        <div class="label-box reset-trigger" id="reset-btn"></div>
         <div class="slider-area-half">
             <div class="text-labels">
                 <span style="left:0%">強い</span>
@@ -474,10 +480,8 @@
         }, 80);
     });
 
-    // ★★★ 発泡（リセット）ボタンの挙動改善ロジック ★★★
     var resetBtn = document.getElementById('reset-btn');
 
-    // リセット処理そのものを実行する関数
     function runResetAction() {
         document.getElementById('sake-name').value = '';
         document.getElementById('impression-text').value = '';
@@ -487,27 +491,24 @@
         setTimeout(updateLayout, 30);
     }
 
-    // 1. スマホ操作（タッチした瞬間と離した瞬間）
     resetBtn.addEventListener('touchstart', function(e) {
-        resetBtn.classList.add('resetting'); // 触れた瞬間に「黄緑色（リセット）」へ変更＆縮小
-        runResetAction();                    // 内部データもその場でリセット
+        resetBtn.classList.add('resetting');
+        runResetAction();
     }, { passive: true });
 
     resetBtn.addEventListener('touchend', function(e) {
-        resetBtn.classList.remove('resetting'); // 指を離した瞬間に元の「紺色（発泡）」へ戻す
+        resetBtn.classList.remove('resetting');
     });
 
-    // 2. PC操作マウス（押し込んだ瞬間と離した瞬間）
     resetBtn.addEventListener('mousedown', function(e) {
-        resetBtn.classList.add('resetting'); // マウスを押した瞬間に変更
+        resetBtn.classList.add('resetting');
         runResetAction();
     });
 
     resetBtn.addEventListener('mouseup', function(e) {
-        resetBtn.classList.remove('resetting'); // マウスを離した瞬間に戻す
+        resetBtn.classList.remove('resetting');
     });
 
-    // マウスがボタンの外へ外れた際のエスケープ処理
     resetBtn.addEventListener('mouseleave', function(e) {
         resetBtn.classList.remove('resetting');
     });
