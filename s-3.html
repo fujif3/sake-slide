@@ -19,7 +19,7 @@
         margin: 0; 
         padding: 0; 
         box-sizing: border-box; 
-        /* ★ 全体に文字選択禁止（ただし入力欄は除く） ★ */
+        /* チャート全体で文字選択・長押しを禁止 */
         -webkit-user-select: none;
         user-select: none;
     }
@@ -97,31 +97,37 @@
         flex-shrink: 0;
         margin-right: 15px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.15);
-        transition: background-color 0.1s, color 0.1s, transform 0.05s;
+        transition: background-color 0.15s, transform 0.05s;
     }
 
-    /* ★★★ 発泡タイルの画像（SVG）切り替えロジック ★★★ */
+    /* ★★★ 【重要】PCとスマホで完全に切り分けた新・リセット仕様（SVGグラフィック化） ★★★ */
     .reset-trigger {
         cursor: pointer;
         position: relative;
-        -webkit-tap-highlight-color: transparent;
-        /* 長押し時のポップアップ（メニュー表示）をスマホ側で禁止 */
-        -webkit-touch-callout: none; 
-    }
-
-    /* 通常時の「発泡」というテキスト自体を非表示にし、画像（SVG）で配置 */
-    .reset-trigger {
-        color: transparent !important;
-        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="60" height="36" viewBox="0 0 60 36"><text x="50%" y="54%" font-family="sans-serif" font-weight="bold" font-size="14" fill="white" domaint-baseline="middle" text-anchor="middle" dominant-baseline="central">発泡</text></svg>');
+        -webkit-tap-highlight-color: transparent; /* スマホのデフォルトのタップ影を無効化 */
+        -webkit-touch-out: none;
+        -webkit-touch-callout: none;               /* iOS長押し時のポップアップメニューを完全禁止 */
+        color: transparent !important;             /* HTML内の生テキストを選択・コピーさせないよう透明化 */
+        
+        /* デフォルト状態：「発泡」文字をSVG画像として配置（高精細・コピープルーフ） */
+        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="60" height="36" viewBox="0 0 60 36"><text x="50%" y="54%" font-family="sans-serif" font-weight="bold" font-size="14" fill="white" text-anchor="middle" dominant-baseline="central">発泡</text></svg>');
         background-repeat: no-repeat;
         background-position: center;
     }
 
-    /* タッチされた瞬間（.resetting）は背景色を黄緑にし、画像（SVG）を「リセット」に変更 */
+    /* PC環境（マウスホバーができるデバイス）のみ、マウスを当てた時に「リセット」へ変色させる */
+    @media (hover: hover) {
+        .reset-trigger:hover {
+            background-color: #BBF2A0 !important;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="60" height="36" viewBox="0 0 60 36"><text x="50%" y="54%" font-family="sans-serif" font-weight="bold" font-size="13" fill="%23333333" text-anchor="middle" dominant-baseline="central">リセット</text></svg>');
+        }
+    }
+
+    /* スマホでタッチしている間、およびPCでクリックした瞬間のアクティブ状態 */
     .reset-trigger.resetting {
         background-color: #BBF2A0 !important;
-        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="60" height="36" viewBox="0 0 60 36"><text x="50%" y="54%" font-family="sans-serif" font-weight="bold" font-size="13" fill="%23333333" domaint-baseline="middle" text-anchor="middle" dominant-baseline="central">リセット</text></svg>');
         transform: scale(0.96);
+        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="60" height="36" viewBox="0 0 60 36"><text x="50%" y="54%" font-family="sans-serif" font-weight="bold" font-size="13" fill="%23333333" text-anchor="middle" dominant-baseline="central">リセット</text></svg>');
     }
 
     .slider-area, .slider-area-half {
@@ -495,6 +501,7 @@
         setTimeout(updateLayout, 30);
     }
 
+    // 1. スマホタッチ処理：触れた瞬間にリセットを実行、指を離したら確実に「発泡」に復帰
     resetBtn.addEventListener('touchstart', function(e) {
         resetBtn.classList.add('resetting');
         runResetAction();
@@ -504,6 +511,7 @@
         resetBtn.classList.remove('resetting');
     });
 
+    // 2. PCマウス処理：ホバーはCSSで自動制御、クリック時の沈み込みのみ連動
     resetBtn.addEventListener('mousedown', function(e) {
         resetBtn.classList.add('resetting');
         runResetAction();
