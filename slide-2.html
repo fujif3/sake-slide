@@ -85,7 +85,7 @@
         transition: background-color 0.2s, transform 0.1s;
     }
 
-    /* 発泡タイル（リセットボタン） */
+    /* 発泡（リセットボタン） */
     .reset-trigger {
         cursor: pointer;
         position: relative;
@@ -118,7 +118,7 @@
         transform: scale(0.96);
     }
 
-    /* スライダー領域（ver1の手法を適用） */
+    /* スライダー基盤（ver1の完全レスポンシブ設計を採用） */
     .slider-area, .slider-area-half {
         position: relative;
         height: 60px;
@@ -129,6 +129,7 @@
     .text-labels {
         position: relative;
         height: 24px;
+        width: 100%;
     }
     
     .text-labels span {
@@ -139,7 +140,7 @@
         white-space: nowrap;
         transform: translateX(-50%);
     }
-    /* 端のテキストのはみ出し防止 */
+    /* 端のテキストのはみ出し・重なりを物理的に防止 */
     .text-labels span:first-child { transform: translateX(0); }
     .text-labels span:last-child  { transform: translateX(-100%); }
 
@@ -189,7 +190,6 @@
         flex-shrink: 0;
     }
 
-    /* 赤丸（thumb）の再現 */
     .pink-dot {
         position: absolute;
         top: 50%;
@@ -362,18 +362,28 @@
 
 <script>
 (function() {
-    // 下4本のスライダーの横幅を、上2本の半分（50%）に自動計算して合わせる
-    function setHalfWidths() {
+    // 現在保持している各スライダーのパーセント値を記憶する配列
+    var sliderStates = [];
+
+    // スライダーの幅の調整と、現在の％値に基づいた赤丸位置の「再計算」を統合
+    function updateLayout() {
         var fullArea = document.querySelector('.slider-area');
         if (!fullArea) return;
-        // ver2のデザイン（ラベルボックス等の隙間）に合わせて綺麗に1/2幅を算出
+        
         var halfWidth = Math.floor(fullArea.offsetWidth / 2);
         document.querySelectorAll('.slider-area-half').forEach(function(el) {
             el.style.width = halfWidth + 'px';
         });
+
+        // 画面サイズ変更に合わせて、すべての赤丸の位置を再計算して再吸着させる（はみ出しバグ対策）
+        document.querySelectorAll('.track').forEach(function(track, index) {
+            var dotEl = track.querySelector('.pink-dot');
+            if (dotEl && sliderStates[index] !== undefined) {
+                setDotPct(dotEl, sliderStates[index]);
+            }
+        });
     }
 
-    // 目盛り縦線の生成
     function buildDots(dotsEl, ticks) {
         dotsEl.innerHTML = '';
         for (var i = 0; i < ticks; i++) {
@@ -383,49 +393,49 @@
         }
     }
 
-    // 赤丸の位置を設定
     function setDotPct(dotEl, pct) {
         var track = dotEl.parentElement;
         var trackWidth = track.offsetWidth;
-        var innerWidth = trackWidth - 24; // thumbサイズ(24px)に合わせた補正
+        var innerWidth = trackWidth - 24; // thumb補正(24px)
         var px = 12 + (innerWidth * Math.max(0, Math.min(100, pct)) / 100);
         dotEl.style.left = px + 'px';
     }
 
-    // スライダーの制御（タッチイベント・マウスイベントの統合）
-    function initTrack(track) {
+    function initTrack(track, index) {
         var ticks = parseInt(track.dataset.ticks, 10);
         var defaultPct = parseFloat(track.dataset.default);
         var dotsEl = track.querySelector('.tick-dots');
         var dotEl = track.querySelector('.pink-dot');
-        var curPct = defaultPct;
-        var dragging = false;
+        
+        // 初期状態を記憶
+        sliderStates[index] = defaultPct;
 
         buildDots(dotsEl, ticks);
-        setDotPct(dotEl, curPct);
+        setDotPct(dotEl, sliderStates[index]);
 
         function pctFrom(clientX) {
             var rect = track.getBoundingClientRect();
             return Math.max(0, Math.min(100, (clientX - rect.left - 12) / (rect.width - 24) * 100));
         }
 
+        var dragging = false;
+
         function onStart(clientX) {
             dragging = true;
             dotEl.classList.add('active');
-            curPct = pctFrom(clientX);
-            setDotPct(dotEl, curPct);
+            sliderStates[index] = pctFrom(clientX);
+            setDotPct(dotEl, sliderStates[index]);
         }
         function onMove(clientX) {
             if (!dragging) return;
-            curPct = pctFrom(clientX);
-            setDotPct(dotEl, curPct);
+            sliderStates[index] = pctFrom(clientX);
+            setDotPct(dotEl, sliderStates[index]);
         }
         function onEnd() {
             dragging = false;
             dotEl.classList.remove('active');
         }
 
-        // スマホ用タッチイベント
         function addTouch(el) {
             el.addEventListener('touchstart', function(e) {
                 e.preventDefault();
@@ -438,7 +448,6 @@
             el.addEventListener('touchend', onEnd);
         }
 
-        // PC用マウスイベント
         function addMouse(el) {
             el.addEventListener('mousedown', function(e) {
                 onStart(e.clientX);
@@ -455,22 +464,23 @@
         addMouse(dotEl);
 
         track._reset = function() {
-            curPct = defaultPct;
-            setDotPct(dotEl, curPct);
+            sliderStates[index] = defaultPct;
+            setDotPct(dotEl, defaultPct);
         };
     }
 
-    // 初期化とリサイズ対応
+    // 初期化
     window.addEventListener('load', function() {
         setTimeout(function() {
-            setHalfWidths();
             document.querySelectorAll('.track').forEach(initTrack);
+            updateLayout();
         }, 50);
     });
 
-    window.addEventListener('resize', setHalfWidths);
+    // 画面の縦横切り替え（リサイズ）を検知して自動で位置補正
+    window.addEventListener('resize', updateLayout);
 
-    // リセットボタン（発泡タイル）の処理
+    // リセット処理
     document.getElementById('reset-btn').addEventListener('click', function() {
         document.getElementById('sake-name').value = '';
         document.getElementById('impression-text').value = '';
