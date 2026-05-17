@@ -19,6 +19,15 @@
         margin: 0; 
         padding: 0; 
         box-sizing: border-box; 
+        /* ★ 全体に文字選択禁止（ただし入力欄は除く） ★ */
+        -webkit-user-select: none;
+        user-select: none;
+    }
+
+    /* 入力欄（銘柄・第一印象）だけは文字入力・選択を許可 */
+    input, textarea {
+        -webkit-user-select: auto !important;
+        user-select: auto !important;
     }
 
     body {
@@ -29,7 +38,6 @@
         padding: 40px 0px 10px;
     }
 
-    /* ★★★ 完全な1:1（正方形）にするための外枠コンテナの最終調整 ★★★ */
     .chart-container {
         width: 95%;
         max-width: 400px;
@@ -37,7 +45,7 @@
         background-color: var(--bg-color);
         border: 1.5px solid rgba(122,122,42,0.15);
         border-radius: 6px;
-        padding: 12px 1.5em 0.8em; /* 下部パディングを0.8emまで詰めて正方形比率を確定 */
+        padding: 12px 1.5em 0.8em;
         box-shadow: 0 4px 15px rgba(0,0,0,0.05);
     }
 
@@ -92,33 +100,28 @@
         transition: background-color 0.1s, color 0.1s, transform 0.05s;
     }
 
+    /* ★★★ 発泡タイルの画像（SVG）切り替えロジック ★★★ */
     .reset-trigger {
         cursor: pointer;
         position: relative;
         -webkit-tap-highlight-color: transparent;
-    }
-    .reset-trigger::before {
-        content: 'リセット';
-        position: absolute;
-        top: 0; left: 0; width: 100%; height: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: bold;
-        font-size: 13px;
-        color: #333;
-        opacity: 0;
-        transition: opacity 0.1s;
-        pointer-events: none;
+        /* 長押し時のポップアップ（メニュー表示）をスマホ側で禁止 */
+        -webkit-touch-callout: none; 
     }
 
+    /* 通常時の「発泡」というテキスト自体を非表示にし、画像（SVG）で配置 */
+    .reset-trigger {
+        color: transparent !important;
+        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="60" height="36" viewBox="0 0 60 36"><text x="50%" y="54%" font-family="sans-serif" font-weight="bold" font-size="14" fill="white" domaint-baseline="middle" text-anchor="middle" dominant-baseline="central">発泡</text></svg>');
+        background-repeat: no-repeat;
+        background-position: center;
+    }
+
+    /* タッチされた瞬間（.resetting）は背景色を黄緑にし、画像（SVG）を「リセット」に変更 */
     .reset-trigger.resetting {
         background-color: #BBF2A0 !important;
-        color: transparent !important;
+        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="60" height="36" viewBox="0 0 60 36"><text x="50%" y="54%" font-family="sans-serif" font-weight="bold" font-size="13" fill="%23333333" domaint-baseline="middle" text-anchor="middle" dominant-baseline="central">リセット</text></svg>');
         transform: scale(0.96);
-    }
-    .reset-trigger.resetting::before {
-        opacity: 1 !important;
     }
 
     .slider-area, .slider-area-half {
@@ -209,28 +212,26 @@
         box-shadow: 0 0 0 6px rgba(255, 77, 109, 0.25);
     }
 
-    /* ★★★ 第一印象エリアおよび枠下部分の隙間を限界までタイトに固定 ★★★ */
     .impression-area {
-        margin-top: 10px; /* さらに上に詰め */
+        margin-top: 10px;
         padding-top: 0;
-        margin-bottom: 0; /* 下マージンを完全排除 */
+        margin-bottom: 0;
     }
     
-    /* きっちり「1行固定」の入力ボックススタイル */
     .impression-box {
         width: 100%;
-        height: 28px; /* 1行分の高さに固定 */
+        height: 28px;
         border: 1px solid var(--input-border);
         border-radius: 4px;
         background: var(--input-bg);
-        padding: 0px 10px; /* 上下パディングを0にして、1行テキストを垂直中央に */
+        padding: 0px 10px;
         box-sizing: border-box;
         font-family: inherit;
         font-size: 13px;
-        line-height: 26px; /* 高さ28pxの中で文字がちょうど真ん中に来るように調整 */
-        resize: none; /* リサイズ禁止 */
-        overflow: hidden; /* スクロールバーの発生を防止 */
-        white-space: nowrap; /* 改行を禁止し、1行をキープ */
+        line-height: 26px;
+        resize: none;
+        overflow: hidden;
+        white-space: nowrap;
         color: #333;
     }
     .impression-box:focus {
@@ -344,7 +345,7 @@
     </div>
 
     <div class="sake-row">
-        <div class="label-box reset-trigger" id="reset-btn">発泡</div>
+        <div class="label-box reset-trigger" id="reset-btn"></div>
         <div class="slider-area-half">
             <div class="text-labels">
                 <span style="left:0%">強い</span>
@@ -516,7 +517,6 @@
         resetBtn.classList.remove('resetting');
     });
 
-    // Enterキーによる意図しない改行（スクショ崩れ）を防ぐガード
     document.getElementById('impression-text').addEventListener('keydown', function(e) {
         if (e.key === 'Enter') {
             e.preventDefault();
