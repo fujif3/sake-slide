@@ -118,7 +118,7 @@
         transform: scale(0.96);
     }
 
-    /* スライダー基盤（ver1の完全レスポンシブ設計を採用） */
+    /* スライダー基盤 */
     .slider-area, .slider-area-half {
         position: relative;
         height: 60px;
@@ -140,7 +140,6 @@
         white-space: nowrap;
         transform: translateX(-50%);
     }
-    /* 端のテキストのはみ出し・重なりを物理的に防止 */
     .text-labels span:first-child { transform: translateX(0); }
     .text-labels span:last-child  { transform: translateX(-100%); }
 
@@ -362,10 +361,10 @@
 
 <script>
 (function() {
-    // 現在保持している各スライダーのパーセント値を記憶する配列
     var sliderStates = [];
+    var resizeTimer = null;
 
-    // スライダーの幅の調整と、現在の％値に基づいた赤丸位置の「再計算」を統合
+    // レイアウトと赤丸位置の同期処理
     function updateLayout() {
         var fullArea = document.querySelector('.slider-area');
         if (!fullArea) return;
@@ -375,7 +374,6 @@
             el.style.width = halfWidth + 'px';
         });
 
-        // 画面サイズ変更に合わせて、すべての赤丸の位置を再計算して再吸着させる（はみ出しバグ対策）
         document.querySelectorAll('.track').forEach(function(track, index) {
             var dotEl = track.querySelector('.pink-dot');
             if (dotEl && sliderStates[index] !== undefined) {
@@ -396,7 +394,7 @@
     function setDotPct(dotEl, pct) {
         var track = dotEl.parentElement;
         var trackWidth = track.offsetWidth;
-        var innerWidth = trackWidth - 24; // thumb補正(24px)
+        var innerWidth = trackWidth - 24; 
         var px = 12 + (innerWidth * Math.max(0, Math.min(100, pct)) / 100);
         dotEl.style.left = px + 'px';
     }
@@ -407,7 +405,6 @@
         var dotsEl = track.querySelector('.tick-dots');
         var dotEl = track.querySelector('.pink-dot');
         
-        // 初期状態を記憶
         sliderStates[index] = defaultPct;
 
         buildDots(dotsEl, ticks);
@@ -438,13 +435,13 @@
 
         function addTouch(el) {
             el.addEventListener('touchstart', function(e) {
-                e.preventDefault();
+                // タッチされた瞬間に最新のレイアウトを一度強制同期する
+                updateLayout();
                 onStart(e.touches[0].clientX);
-            }, { passive: false });
+            }, { passive: true });
             el.addEventListener('touchmove', function(e) {
-                e.preventDefault();
                 onMove(e.touches[0].clientX);
-            }, { passive: false });
+            }, { passive: true });
             el.addEventListener('touchend', onEnd);
         }
 
@@ -469,24 +466,30 @@
         };
     }
 
-    // 初期化
+    // 初期起動時の処理
     window.addEventListener('load', function() {
-        setTimeout(function() {
-            document.querySelectorAll('.track').forEach(initTrack);
-            updateLayout();
-        }, 50);
+        document.querySelectorAll('.track').forEach(initTrack);
+        // スマホブラウザのレンダリング完了を少しだけ待ってから初期吸着させる
+        setTimeout(updateLayout, 100);
     });
 
-    // 画面の縦横切り替え（リサイズ）を検知して自動で位置補正
-    window.addEventListener('resize', updateLayout);
+    // スマホの画面回転バグ対策：回転アニメーションが完全に終わるのを見計らってから位置を補正
+    window.addEventListener('resize', function() {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(function() {
+            updateLayout();
+        }, 80); // 80ミリ秒のウェイトを置くことで、確定後の正しい幅に100%吸着させます
+    });
 
-    // リセット処理
+    // リセットボタンの連動
     document.getElementById('reset-btn').addEventListener('click', function() {
         document.getElementById('sake-name').value = '';
         document.getElementById('impression-text').value = '';
         document.querySelectorAll('.track').forEach(function(t) {
             if (t._reset) t._reset();
         });
+        // リセット処理直後にもレイアウトを再固定
+        setTimeout(updateLayout, 50);
     });
 })();
 </script>
