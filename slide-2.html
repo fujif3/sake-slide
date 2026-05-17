@@ -82,16 +82,14 @@
         flex-shrink: 0;
         margin-right: 20px;
         box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        transition: background-color 0.2s, transform 0.1s;
+        transition: background-color 0.15s, color 0.15s, transform 0.1s;
     }
 
-    /* 発泡（リセットボタン） */
+    /* 発泡（リセットボタン）のスタイル修正 */
     .reset-trigger {
         cursor: pointer;
         position: relative;
-        background-color: var(--primary-blue);
-        color: white;
-        transition: background-color 0.2s, color 0.2s;
+        -webkit-tap-highlight-color: transparent; /* スマホ特有のタップ時の黒い影を消す */
     }
     .reset-trigger::before {
         content: 'リセット';
@@ -104,16 +102,20 @@
         font-size: 18px;
         color: #333;
         opacity: 0;
-        transition: opacity 0.2s;
+        transition: opacity 0.15s;
         pointer-events: none;
     }
-    .reset-trigger:hover {
-        background-color: #BBF2A0;
-        color: transparent;
+
+    /* JavaScriptで「.resetting」がついた瞬間（押した時）だけ色を切り替える */
+    .reset-trigger.resetting {
+        background-color: #BBF2A0 !important;
+        color: transparent !important;
     }
-    .reset-trigger:hover::before {
-        opacity: 1;
+    .reset-trigger.resetting::before {
+        opacity: 1 !important;
     }
+    
+    /* 押されている時のへこむ演出 */
     .reset-trigger:active {
         transform: scale(0.96);
     }
@@ -364,7 +366,6 @@
     var sliderStates = [];
     var resizeTimer = null;
 
-    // レイアウトと赤丸位置の同期処理
     function updateLayout() {
         var fullArea = document.querySelector('.slider-area');
         if (!fullArea) return;
@@ -435,7 +436,6 @@
 
         function addTouch(el) {
             el.addEventListener('touchstart', function(e) {
-                // タッチされた瞬間に最新のレイアウトを一度強制同期する
                 updateLayout();
                 onStart(e.touches[0].clientX);
             }, { passive: true });
@@ -466,30 +466,42 @@
         };
     }
 
-    // 初期起動時の処理
     window.addEventListener('load', function() {
         document.querySelectorAll('.track').forEach(initTrack);
-        // スマホブラウザのレンダリング完了を少しだけ待ってから初期吸着させる
         setTimeout(updateLayout, 100);
     });
 
-    // スマホの画面回転バグ対策：回転アニメーションが完全に終わるのを見計らってから位置を補正
     window.addEventListener('resize', function() {
         clearTimeout(resizeTimer);
         resizeTimer = setTimeout(function() {
             updateLayout();
-        }, 80); // 80ミリ秒のウェイトを置くことで、確定後の正しい幅に100%吸着させます
+        }, 80);
     });
 
-    // リセットボタンの連動
-    document.getElementById('reset-btn').addEventListener('click', function() {
+    // ★★★ リセットボタンの色変化バグ修正 ★★★
+    var resetBtn = document.getElementById('reset-btn');
+    
+    function triggerResetEffect() {
+        // 1. まずリセット用のクラス「.resetting」を付与して黄緑色（リセット文字）にする
+        resetBtn.classList.add('resetting');
+        
+        // 2. テキストやスライダーの値を初期化
         document.getElementById('sake-name').value = '';
         document.getElementById('impression-text').value = '';
         document.querySelectorAll('.track').forEach(function(t) {
             if (t._reset) t._reset();
         });
-        // リセット処理直後にもレイアウトを再固定
         setTimeout(updateLayout, 50);
+
+        // 3. 0.4秒後に自動的にクラスを外し、スマホでも確実に元の「紺色（発泡）」に戻す
+        setTimeout(function() {
+            resetBtn.classList.remove('resetting');
+        }, 400); 
+    }
+
+    // マウスクリック、およびスマホのタッチ両方で同じエフェクト関数を走らせる
+    resetBtn.addEventListener('click', function(e) {
+        triggerResetEffect();
     });
 })();
 </script>
