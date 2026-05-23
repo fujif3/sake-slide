@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>酒質設定チャート</title>
+<style>
+    :root {
+        --primary-blue: #000080;
+        --thumb-color: #ff4d6d;
+        --dot-color: #2c3e50;
+        --track-color: #e0e0e0;
+        --bg-color: #f0f0f0;
+        --input-bg: #ffffff;
+        --input-border: #cccccc;
+    }
+
+    * { 
+        margin: 0; 
+        padding: 0; 
+        box-sizing: border-box; 
+        -webkit-user-select: none;
+        user-select: none;
+    }
+
+    input, textarea {
+        -webkit-user-select: auto !important;
+        user-select: auto !important;
+    }
+
+    body {
+        font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+        background-color: #fff;
+        display: flex;
+        justify-content: center;
+        /* 上下の余白を詰めて枠内への収まりを最優先に */
+        padding: 60px 0px 5px;
+    }
+
+    .chart-container {
+        width: 95%;
+        max-width: 400px;
+        margin: 0 auto;
+        background-color: var(--bg-color);
+        border: 1.5px solid rgba(122,122,42,0.15);
+        border-radius: 6px;
+        /* 下部に第一印象欄が隠れないよう余白を確保 */
+        padding: 10px 1.2em 3.5em;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    }
+
+    .header-input-wrapper {
+        text-align: center;
+        /* 銘柄入力欄の下部マージンを縮小 */
+        margin-bottom: 6px;
+        border-bottom: 2px solid #ddd;
+        padding-bottom: 2px;
+    }
+
+    .header-input {
+        font-size: 16px;
+        font-weight: bold;
+        color: #333;
+        letter-spacing: 0.1em;
+        text-align: center;
+        width: 100%;
+        border: none;
+        background: transparent;
+        font-family: inherit;
+        padding: 2px;
+    }
+    .header-input:focus {
+        outline: none;
+        border-bottom: 1px solid var(--primary-blue);
+    }
+    .header-input::placeholder {
+        color: #aaa;
+    }
+
+    .sake-row {
+        display: flex;
+        align-items: center;
+        /* 行間を10pxから6pxへ凝縮 */
+        margin-bottom: 6px;
+        position: relative;
+    }
+
+    .label-box {
+        width: 60px;
+        /* ラベルの高さを36pxから32pxに縮小 */
+        height: 32px;
+        background-color: var(--primary-blue);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 13px;
+        border-radius: 6px;
+        flex-shrink: 0;
+        margin-right: 15px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+        transition: background-color 0.1s, color 0.1s, transform 0.05s;
+    }
+
+    /* 発泡タイル：通常時「発泡」表示、押した時「リセット」に切り替え */
+    .reset-trigger {
+        cursor: pointer;
+        position: relative;
+        -webkit-tap-highlight-color: transparent;
+        -webkit-touch-callout: none;
+    }
+
+    .reset-trigger.resetting {
+        background-color: #BBF2A0 !important;
+        transform: scale(0.96);
+        color: transparent !important;
+        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="60" height="32" viewBox="0 0 60 32"><text x="50%" y="54%" font-family="sans-serif" font-weight="bold" font-size="13" fill="%23333333" text-anchor="middle" dominant-baseline="central">リセット</text></svg>');
+        background-repeat: no-repeat;
+        background-position: center;
+    }
+
+    /* スライダー領域全体の高さを44pxから38pxに圧縮 */
+    .slider-area, .slider-area-half {
+        position: relative;
+        height: 38px;
+    }
+    .slider-area { flex: 1; }
+    .slider-area-half { flex-shrink: 0; }
+
+    .text-labels {
+        position: relative;
+        height: 14px;
+        width: 100%;
+    }
+    
+    .text-labels span {
+        position: absolute;
+        font-weight: bold;
+        font-size: 10px;
+        color: #333;
+        white-space: nowrap;
+        transform: translateX(-50%);
+    }
+    .text-labels span:first-child { transform: translateX(0); }
+    .text-labels span:last-child  { transform: translateX(-100%); }
+
+    .track-wrapper {
+        position: relative;
+        /* トラック自体の高さを28pxから24pxに縮小 */
+        height: 24px;
+        display: flex;
+        align-items: center;
+    }
+
+    .track {
+        position: relative;
+        width: calc(100% + 18px);
+        margin-left: -9px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        touch-action: none;
+        user-select: none;
+    }
+
+    .track-line {
+        position: absolute;
+        left: 9px;
+        right: 9px;
+        height: 4px;
+        background: var(--track-color);
+        border-radius: 2px;
+        pointer-events: none;
+    }
+
+    .tick-dots {
+        position: absolute;
+        left: 9px;
+        right: 9px;
+        display: flex;
+        justify-content: space-between;
+        pointer-events: none;
+    }
+
+    .tick-dot {
+        width: 2px;
+        height: 8px;
+        background-color: var(--dot-color);
+        border-radius: 1px;
+        flex-shrink: 0;
+    }
+
+    .pink-dot {
+        position: absolute;
+        top: 50%;
+        /* つまみを18pxから16pxに微小化してさらに高さを抑える */
+        width: 16px;
+        height: 16px;
+        background: var(--thumb-color);
+        border: 2px solid white;
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 10;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.25);
+        transition: box-shadow 0.12s;
+    }
+
+    .pink-dot.active {
+        box-shadow: 0 0 0 5px rgba(255, 77, 109, 0.25);
+    }
+
+    .impression-area {
+        /* 第一印象ボックスの上の隙間を小さく */
+        margin-top: 4px;
+        padding-top: 0;
+        margin-bottom: 0;
+    }
+    
+    .impression-box {
+        width: 100%;
+        /* 入力欄の高さを28pxから26pxへ絞り込み */
+        height: 26px;
+        border: 1px solid var(--input-border);
+        border-radius: 4px;
+        background: var(--input-bg);
+        padding: 0px 8px;
+        box-sizing: border-box;
+        font-family: inherit;
+        font-size: 12px;
+        line-height: 24px;
+        resize: none;
+        overflow: hidden;
+        white-space: nowrap;
+        color: #333;
+    }
+    .impression-box:focus {
+        outline: none;
+        border-color: var(--primary-blue);
+    }
+    .impression-box::placeholder {
+        color: #aaa;
+    }
+</style>
+</head>
+<body>
+
+<div class="chart-container">
+    <div class="header-input-wrapper">
+        <input type="text" id="sake-name" class="header-input" placeholder="日本酒の銘柄を入力">
+    </div>
+
+    <div class="sake-row">
+        <div class="label-box">甘辛</div>
+        <div class="slider-area">
+            <div class="text-labels">
+                <span style="left:0%">甘口</span>
+                <span style="left:25%">やや甘</span>
+                <span style="left:50%">中口</span>
+                <span style="left:75%">やや辛</span>
+                <span style="left:100%">辛口</span>
+            </div>
+            <div class="track-wrapper">
+                <div class="track" data-ticks="5" data-default="50">
+                    <div class="track-line"></div>
+                    <div class="tick-dots"></div>
+                    <div class="pink-dot"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="sake-row">
+        <div class="label-box">濃淡</div>
+        <div class="slider-area">
+            <div class="text-labels">
+                <span style="left:0%">濃醇</span>
+                <span style="left:25%">やや濃</span>
+                <span style="left:50%">普通</span>
+                <span style="left:75%">やや淡</span>
+                <span style="left:100%">淡麗</span>
+            </div>
+            <div class="track-wrapper">
+                <div class="track" data-ticks="5" data-default="50">
+                    <div class="track-line"></div>
+                    <div class="tick-dots"></div>
+                    <div class="pink-dot"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="sake-row">
+        <div class="label-box">香り</div>
+        <div class="slider-area-half">
+            <div class="text-labels">
+                <span style="left:0%">強い</span>
+                <span style="left:50%">やや有</span>
+                <span style="left:100%">普通</span>
+            </div>
+            <div class="track-wrapper">
+                <div class="track" data-ticks="3" data-default="100">
+                    <div class="track-line"></div>
+                    <div class="tick-dots"></div>
+                    <div class="pink-dot"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="sake-row">
+        <div class="label-box">酸</div>
+        <div class="slider-area-half">
+            <div class="text-labels">
+                <span style="left:0%">強い</span>
+                <span style="left:50%">やや有</span>
+                <span style="left:100%">無し</span>
+            </div>
+            <div class="track-wrapper">
+                <div class="track" data-ticks="3" data-default="100">
+                    <div class="track-line"></div>
+                    <div class="tick-dots"></div>
+                    <div class="pink-dot"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="sake-row">
+        <div class="label-box">苦味</div>
+        <div class="slider-area-half">
+            <div class="text-labels">
+                <span style="left:0%">強い</span>
+                <span style="left:50%">やや有</span>
+                <span style="left:100%">無し</span>
+            </div>
+            <div class="track-wrapper">
+                <div class="track" data-ticks="3" data-default="100">
+                    <div class="track-line"></div>
+                    <div class="tick-dots"></div>
+                    <div class="pink-dot"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="sake-row">
+        <div class="label-box reset-trigger" id="reset-btn">発泡</div>
+        <div class="slider-area-half">
+            <div class="text-labels">
+                <span style="left:0%">強い</span>
+                <span style="left:50%">やや有</span>
+                <span style="left:100%">無し</span>
+            </div>
+            <div class="track-wrapper">
+                <div class="track" data-ticks="3" data-default="100">
+                    <div class="track-line"></div>
+                    <div class="tick-dots"></div>
+                    <div class="pink-dot"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="impression-area">
+        <textarea id="impression-text" class="impression-box" placeholder="第一印象を入力..." rows="1"></textarea>
+    </div>
+</div>
+
+<script>
+(function() {
+    var sliderStates = [];
+    var resizeTimer = null;
+
+    function updateLayout() {
+        var fullArea = document.querySelector('.slider-area');
+        if (!fullArea) return;
+        
+        var halfWidth = Math.floor(fullArea.offsetWidth / 2);
+        document.querySelectorAll('.slider-area-half').forEach(function(el) {
+            el.style.width = halfWidth + 'px';
+        });
+
+        document.querySelectorAll('.track').forEach(function(track, index) {
+            var dotEl = track.querySelector('.pink-dot');
+            if (dotEl && sliderStates[index] !== undefined) {
+                setDotPct(dotEl, sliderStates[index]);
+            }
+        });
+    }
+
+    function buildDots(dotsEl, ticks) {
+        dotsEl.innerHTML = '';
+        for (var i = 0; i < ticks; i++) {
+            var d = document.createElement('div');
+            d.className = 'tick-dot';
+            dotsEl.appendChild(d);
+        }
+    }
+
+    function setDotPct(dotEl, pct) {
+        var track = dotEl.parentElement;
+        var trackWidth = track.offsetWidth;
+        var innerWidth = trackWidth - 16; 
+        var px = 8 + (innerWidth * Math.max(0, Math.min(100, pct)) / 100);
+        dotEl.style.left = px + 'px';
+    }
+
+    function initTrack(track, index) {
+        var ticks = parseInt(track.dataset.ticks, 10);
+        var defaultPct = parseFloat(track.dataset.default);
+        var dotsEl = track.querySelector('.tick-dots');
+        var dotEl = track.querySelector('.pink-dot');
+        
+        sliderStates[index] = defaultPct;
+
+        buildDots(dotsEl, ticks);
+        setDotPct(dotEl, sliderStates[index]);
+
+        function pctFrom(clientX) {
+            var rect = track.getBoundingClientRect();
+            return Math.max(0, Math.min(100, (clientX - rect.left - 8) / (rect.width - 16) * 100));
+        }
+
+        var dragging = false;
+
+        function onStart(clientX) {
+            dragging = true;
+            dotEl.classList.add('active');
+            sliderStates[index] = pctFrom(clientX);
+            setDotPct(dotEl, sliderStates[index]);
+        }
+        function onMove(clientX) {
+            if (!dragging) return;
+            sliderStates[index] = pctFrom(clientX);
+            setDotPct(dotEl, sliderStates[index]);
+        }
+        function onEnd() {
+            dragging = false;
+            dotEl.classList.remove('active');
+        }
+
+        function addTouch(el) {
+            el.addEventListener('touchstart', function(e) {
+                updateLayout();
+                onStart(e.touches[0].clientX);
+            }, { passive: true });
+            el.addEventListener('touchmove', function(e) {
+                onMove(e.touches[0].clientX);
+            }, { passive: true });
+            el.addEventListener('touchend', onEnd);
+        }
+
+        function addMouse(el) {
+            el.addEventListener('mousedown', function(e) {
+                onStart(e.clientX);
+                function mm(ev) { onMove(ev.clientX); }
+                function mu() { onEnd(); document.removeEventListener('mousemove', mm); document.removeEventListener('mouseup', mu); }
+                document.addEventListener('mousemove', mm);
+                document.addEventListener('mouseup', mu);
+            });
+        }
+
+        addTouch(track);
+        addTouch(dotEl);
+        addMouse(track);
+        addMouse(dotEl);
+
+        track._reset = function() {
+            sliderStates[index] = defaultPct;
+            setDotPct(dotEl, defaultPct);
+        };
+    }
+
+    window.addEventListener('load', function() {
+        document.querySelectorAll('.track').forEach(initTrack);
+        setTimeout(updateLayout, 100);
+    });
+
+    window.addEventListener('resize', function() {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(function() {
+            updateLayout();
+        }, 80);
+    });
+
+    var resetBtn = document.getElementById('reset-btn');
+
+    function runResetAction() {
+        document.getElementById('sake-name').value = '';
+        document.getElementById('impression-text').value = '';
+        document.querySelectorAll('.track').forEach(function(t) {
+            if (t._reset) t._reset();
+        });
+        setTimeout(updateLayout, 30);
+    }
+
+    resetBtn.addEventListener('touchstart', function(e) {
+        resetBtn.classList.add('resetting');
+        runResetAction();
+    }, { passive: true });
+
+    resetBtn.addEventListener('touchend', function(e) {
+        resetBtn.classList.remove('resetting');
+    });
+
+    resetBtn.addEventListener('mousedown', function(e) {
+        resetBtn.classList.add('resetting');
+        runResetAction();
+    });
+
+    resetBtn.addEventListener('mouseup', function(e) {
+        resetBtn.classList.remove('resetting');
+    });
+
+    resetBtn.addEventListener('mouseleave', function(e) {
+        resetBtn.classList.remove('resetting');
+    });
+
+    document.getElementById('impression-text').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+        }
+    });
+
+})();
+</script>
+
+</body>
+</html>
