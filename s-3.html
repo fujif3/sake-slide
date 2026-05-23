@@ -15,17 +15,11 @@
         --input-border: #cccccc;
     }
 
+    /* システムの自動画像化バグを防ぐため、全体(＊)への文字選択禁止を解除 */
     * { 
         margin: 0; 
         padding: 0; 
         box-sizing: border-box; 
-        -webkit-user-select: none;
-        user-select: none;
-    }
-
-    input, textarea {
-        -webkit-user-select: auto !important;
-        user-select: auto !important;
     }
 
     body {
@@ -33,29 +27,29 @@
         background-color: #fff;
         display: flex;
         justify-content: center;
-        padding: 4px 0px; /* 上下の無駄な余白を極限までカット */
+        padding: 40px 0px 10px;
     }
 
     .chart-container {
-        width: 96%;
+        width: 95%;
         max-width: 400px;
         margin: 0 auto;
         background-color: var(--bg-color);
         border: 1.5px solid rgba(122,122,42,0.15);
         border-radius: 6px;
-        padding: 8px 1.0em 6px; /* 上下左右の余白をさらにタイトに */
+        padding: 12px 1.5em 0.8em;
         box-shadow: 0 4px 15px rgba(0,0,0,0.05);
     }
 
     .header-input-wrapper {
         text-align: center;
-        margin-bottom: 6px; /* 隙間を縮小 */
+        margin-bottom: 12px;
         border-bottom: 2px solid #ddd;
-        padding-bottom: 1px;
+        padding-bottom: 3px;
     }
 
     .header-input {
-        font-size: 16px; /* 18pxから縮小 */
+        font-size: 18px;
         font-weight: bold;
         color: #333;
         letter-spacing: 0.1em;
@@ -64,7 +58,7 @@
         border: none;
         background: transparent;
         font-family: inherit;
-        padding: 1px;
+        padding: 3px;
     }
     .header-input:focus {
         outline: none;
@@ -77,27 +71,32 @@
     .sake-row {
         display: flex;
         align-items: center;
-        margin-bottom: 4px; /* 7px から 4px にさらに圧縮 */
+        margin-bottom: 10px;
         position: relative;
     }
 
     .label-box {
-        width: 54px; /* 60px から 54px に */
-        height: 30px; /* 34px から 30px に縮小 */
+        width: 60px;
+        height: 36px;
         background-color: var(--primary-blue);
         color: white;
         display: flex;
         align-items: center;
         justify-content: center;
         font-weight: bold;
-        font-size: 13px; /* 14px から 13px に */
-        border-radius: 5px;
+        font-size: 14px;
+        border-radius: 6px;
         flex-shrink: 0;
-        margin-right: 12px;
+        margin-right: 15px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.15);
         transition: background-color 0.15s, transform 0.05s;
+        
+        /* ラベル単体に安全にガードを適用 */
+        -webkit-user-select: none;
+        user-select: none;
     }
 
+    /* 5行目の発泡（リセットトリガー）のスタイル設定 */
     .reset-trigger {
         cursor: pointer;
         position: relative;
@@ -105,8 +104,10 @@
         -webkit-touch-out: none;
         -webkit-touch-callout: none;
         color: transparent !important;
+        -webkit-user-select: none;
+        user-select: none;
         
-        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="54" height="30" viewBox="0 0 54 30"><text x="50%" y="54%" font-family="sans-serif" font-weight="bold" font-size="13" fill="white" text-anchor="middle" dominant-baseline="central">発泡</text></svg>');
+        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="60" height="36" viewBox="0 0 60 36"><text x="50%" y="54%" font-family="sans-serif" font-weight="bold" font-size="14" fill="white" text-anchor="middle" dominant-baseline="central">発泡</text></svg>');
         background-repeat: no-repeat;
         background-position: center;
     }
@@ -114,33 +115,35 @@
     @media (hover: hover) {
         .reset-trigger:hover {
             background-color: #BBF2A0 !important;
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="54" height="30" viewBox="0 0 54 30"><text x="50%" y="54%" font-family="sans-serif" font-weight="bold" font-size="12" fill="%23333333" text-anchor="middle" dominant-baseline="central">リセット</text></svg>');
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="60" height="36" viewBox="0 0 60 36"><text x="50%" y="54%" font-family="sans-serif" font-weight="bold" font-size="13" fill="%23333333" text-anchor="middle" dominant-baseline="central">リセット</text></svg>');
         }
     }
 
     .reset-trigger.resetting {
         background-color: #BBF2A0 !important;
         transform: scale(0.96);
-        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="54" height="30" viewBox="0 0 54 30"><text x="50%" y="54%" font-family="sans-serif" font-weight="bold" font-size="12" fill="%23333333" text-anchor="middle" dominant-baseline="central">リセット</text></svg>');
+        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="60" height="36" viewBox="0 0 60 36"><text x="50%" y="54%" font-family="sans-serif" font-weight="bold" font-size="13" fill="%23333333" text-anchor="middle" dominant-baseline="central">リセット</text></svg>');
     }
 
     .slider-area, .slider-area-half {
         position: relative;
-        height: 34px; /* 40px から 34px にして縦を極限まで薄く */
+        height: 44px;
     }
     .slider-area { flex: 1; }
     .slider-area-half { flex-shrink: 0; }
 
     .text-labels {
         position: relative;
-        height: 12px; /* 縦幅削減 */
+        height: 16px;
         width: 100%;
+        -webkit-user-select: none;
+        user-select: none;
     }
     
     .text-labels span {
         position: absolute;
         font-weight: bold;
-        font-size: 9px; /* 10px から 9px に微細化 */
+        font-size: 10px;
         color: #333;
         white-space: nowrap;
         transform: translateX(-50%);
@@ -150,37 +153,38 @@
 
     .track-wrapper {
         position: relative;
-        height: 22px; /* 26px から 22px に縮小 */
+        height: 28px;
         display: flex;
         align-items: center;
     }
 
     .track {
         position: relative;
-        width: calc(100% + 16px);
-        margin-left: -8px;
-        height: 22px;
+        width: calc(100% + 18px);
+        margin-left: -9px;
+        height: 28px;
         display: flex;
         align-items: center;
         cursor: pointer;
         touch-action: none;
+        -webkit-user-select: none;
         user-select: none;
     }
 
     .track-line {
         position: absolute;
-        left: 8px;
-        right: 8px;
-        height: 4px; /* 少し細く */
+        left: 9px;
+        right: 9px;
+        height: 5px;
         background: var(--track-color);
-        border-radius: 2px;
+        border-radius: 3px;
         pointer-events: none;
     }
 
     .tick-dots {
         position: absolute;
-        left: 8px;
-        right: 8px;
+        left: 9px;
+        right: 9px;
         display: flex;
         justify-content: space-between;
         pointer-events: none;
@@ -188,7 +192,7 @@
 
     .tick-dot {
         width: 2px;
-        height: 8px; /* 短く */
+        height: 10px;
         background-color: var(--dot-color);
         border-radius: 1px;
         flex-shrink: 0;
@@ -197,8 +201,8 @@
     .pink-dot {
         position: absolute;
         top: 50%;
-        width: 16px; /* つまみを 18px から 16px に小さく */
-        height: 16px;
+        width: 18px;
+        height: 18px;
         background: var(--thumb-color);
         border: 2px solid white;
         border-radius: 50%;
@@ -209,26 +213,26 @@
     }
 
     .pink-dot.active {
-        box-shadow: 0 0 0 5px rgba(255, 77, 109, 0.25);
+        box-shadow: 0 0 0 6px rgba(255, 77, 109, 0.25);
     }
 
     .impression-area {
-        margin-top: 4px;
+        margin-top: 10px;
         padding-top: 0;
-        margin-bottom: 2px;
+        margin-bottom: 0;
     }
     
     .impression-box {
         width: 100%;
-        height: 26px; /* 28px から 26px に */
+        height: 28px;
         border: 1px solid var(--input-border);
         border-radius: 4px;
         background: var(--input-bg);
-        padding: 0px 8px;
+        padding: 0px 10px;
         box-sizing: border-box;
         font-family: inherit;
-        font-size: 12px;
-        line-height: 24px;
+        font-size: 13px;
+        line-height: 26px;
         resize: none;
         overflow: hidden;
         white-space: nowrap;
@@ -327,24 +331,6 @@
     </div>
 
     <div class="sake-row">
-        <div class="label-box">苦味</div>
-        <div class="slider-area-half">
-            <div class="text-labels">
-                <span style="left:0%">強い</span>
-                <span style="left:50%">やや有</span>
-                <span style="left:100%">無し</span>
-            </div>
-            <div class="track-wrapper">
-                <div class="track" data-ticks="3" data-default="100">
-                    <div class="track-line"></div>
-                    <div class="tick-dots"></div>
-                    <div class="pink-dot"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="sake-row">
         <div class="label-box reset-trigger" id="reset-btn"></div>
         <div class="slider-area-half">
             <div class="text-labels">
@@ -401,8 +387,8 @@
     function setDotPct(dotEl, pct) {
         var track = dotEl.parentElement;
         var trackWidth = track.offsetWidth;
-        var innerWidth = trackWidth - 16; 
-        var px = 8 + (innerWidth * Math.max(0, Math.min(100, pct)) / 100);
+        var innerWidth = trackWidth - 18; 
+        var px = 9 + (innerWidth * Math.max(0, Math.min(100, pct)) / 100);
         dotEl.style.left = px + 'px';
     }
 
@@ -419,7 +405,7 @@
 
         function pctFrom(clientX) {
             var rect = track.getBoundingClientRect();
-            return Math.max(0, Math.min(100, (clientX - rect.left - 8) / (rect.width - 16) * 100));
+            return Math.max(0, Math.min(100, (clientX - rect.left - 9) / (rect.width - 18) * 100));
         }
 
         var dragging = false;
