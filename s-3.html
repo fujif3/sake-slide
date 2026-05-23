@@ -44,8 +44,8 @@
         background-color: var(--bg-color);
         border: 1.5px solid rgba(122,122,42,0.15);
         border-radius: 6px;
-        /* パディングを上下にさらに小さく（上10px、下6px） */
-        padding: 10px 1.2em 6px;
+        /* 下部に第一印象欄が隠れないよう余白を確保 */
+        padding: 10px 1.2em 3.5em;
         box-shadow: 0 4px 15px rgba(0,0,0,0.05);
     }
 
@@ -103,24 +103,21 @@
         transition: background-color 0.1s, color 0.1s, transform 0.05s;
     }
 
-    /* リセット（旧発泡）タイルのレイアウトサイズ指定 */
+    /* 発泡タイル：通常時「発泡」表示、押した時「リセット」に切り替え */
     .reset-trigger {
         cursor: pointer;
         position: relative;
         -webkit-tap-highlight-color: transparent;
-        -webkit-touch-out: none;
-        -webkit-touch-callout: none; 
-        color: transparent !important;
-        /* SVGのサイズを高さ32pxに最適化 */
-        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="60" height="32" viewBox="0 0 60 32"><text x="50%" y="54%" font-family="sans-serif" font-weight="bold" font-size="13" fill="%23333333" text-anchor="middle" dominant-baseline="central">リセット</text></svg>');
-        background-repeat: no-repeat;
-        background-position: center;
+        -webkit-touch-callout: none;
     }
 
     .reset-trigger.resetting {
         background-color: #BBF2A0 !important;
         transform: scale(0.96);
+        color: transparent !important;
         background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="60" height="32" viewBox="0 0 60 32"><text x="50%" y="54%" font-family="sans-serif" font-weight="bold" font-size="13" fill="%23333333" text-anchor="middle" dominant-baseline="central">リセット</text></svg>');
+        background-repeat: no-repeat;
+        background-position: center;
     }
 
     /* スライダー領域全体の高さを44pxから38pxに圧縮 */
@@ -349,7 +346,7 @@
     </div>
 
     <div class="sake-row">
-        <div class="label-box reset-trigger" id="reset-btn"></div>
+        <div class="label-box reset-trigger" id="reset-btn">発泡</div>
         <div class="slider-area-half">
             <div class="text-labels">
                 <span style="left:0%">強い</span>
