@@ -44,8 +44,7 @@
         background-color: var(--bg-color);
         border: 1.5px solid rgba(122,122,42,0.15);
         border-radius: 6px;
-        /* 下部に第一印象欄が隠れないよう余白を確保 */
-        padding: 10px 1.2em 3.5em;
+        padding: 10px 1.2em 1.2em;
         box-shadow: 0 4px 15px rgba(0,0,0,0.05);
     }
 
@@ -221,27 +220,32 @@
     }
 
     .impression-area {
-        /* 第一印象ボックスの上の隙間を小さく */
         margin-top: 4px;
         padding-top: 0;
         margin-bottom: 0;
+        display: flex;
+        align-items: flex-start;
+        gap: 4px;
+    }
+    .impression-label {
+        font-size: 8px;
+        font-weight: bold;
+        color: #555;
+        white-space: nowrap;
+        padding-top: 4px;
+        flex-shrink: 0;
     }
     
     .impression-box {
-        width: 100%;
-        /* 入力欄の高さを28pxから26pxへ絞り込み */
-        height: 26px;
+        flex: 1;
+        height: 24px;
         border: 1px solid var(--input-border);
         border-radius: 4px;
         background: var(--input-bg);
-        padding: 0px 8px;
+        padding: 2px 8px;
         box-sizing: border-box;
         font-family: inherit;
-        font-size: 12px;
-        line-height: 24px;
-        resize: none;
-        overflow: hidden;
-        white-space: nowrap;
+        font-size: 10px;
         color: #333;
     }
     .impression-box:focus {
@@ -373,7 +377,8 @@
     </div>
 
     <div class="impression-area">
-        <textarea id="impression-text" class="impression-box" placeholder="第一印象を入力..." rows="1"></textarea>
+        <span class="impression-label">第一印象：</span>
+        <input type="text" id="impression-text" class="impression-box" placeholder="">
     </div>
 </div>
 
@@ -529,11 +534,7 @@
         resetBtn.classList.remove('resetting');
     });
 
-    document.getElementById('impression-text').addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-        }
-    });
+
 
 })();
 </script>
